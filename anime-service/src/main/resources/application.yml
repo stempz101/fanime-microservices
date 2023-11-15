@@ -1,0 +1,18 @@
+server:
+  port: 8081
+spring:
+  application:
+    name: anime-service
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017
+      database: fanime
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info,health
