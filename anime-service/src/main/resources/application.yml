@@ -1,12 +1,12 @@
 server:
-  port: 8081
+  port: 8080
 spring:
   application:
     name: anime-service
   data:
     mongodb:
       uri: mongodb://localhost:27017
-      database: fanime
+      database: fanime-animes
 eureka:
   client:
     service-url:
