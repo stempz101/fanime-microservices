@@ -4,16 +4,16 @@ spring:
   application:
     name: user-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/fanime-users
-    username: postgres
-    password: root
+    url: "${POSTGRES_URL:jdbc:postgresql://localhost:5432/fanime-users}"
+    username: "${POSTGRES_USER:postgres}"
+    password: "${POSTGRES_PASSWORD:root}"
   jpa:
     hibernate:
       ddl-auto: update
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka
+      defaultZone: "${DISCOVERY_URL:http://localhost:8761/eureka}"
 management:
   endpoints:
     web:

@@ -45,8 +45,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - '8761:8761'
-    environment:
-      SPRING_PROFILES_ACTIVE: docker
 
   api-gateway-service:
     container_name: api-gateway-service
@@ -56,7 +54,7 @@ services:
     ports:
       - '8765:8765'
     environment:
-      SPRING_PROFILES_ACTIVE: docker
+      DISCOVERY_URL: http://discovery-service:8761/eureka
     depends_on:
       - discovery-service
 
@@ -68,9 +66,11 @@ services:
     ports:
       - '8080:8080'
     environment:
-      SPRING_PROFILES_ACTIVE: docker
       MONGODB_USER: root
       MONGODB_PASS: root
+      MONGODB_HOST: mongo
+      MONGODB_PORT: 27017
+      DISCOVERY_URL: http://discovery-service:8761/eureka
     depends_on:
       - mongo
       - discovery-service
@@ -84,10 +84,10 @@ services:
     ports:
       - '8081:8081'
     environment:
-      SPRING_PROFILES_ACTIVE: docker
       POSTGRES_URL: jdbc:postgresql://postgres:5432/fanime-users
       POSTGRES_USER: user
       POSTGRES_PASSWORD: pass
+      DISCOVERY_URL: http://discovery-service:8761/eureka
     depends_on:
       - postgres
       - discovery-service
