@@ -1,0 +1,23 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: auth-service
+  datasource:
+    url: "${POSTGRES_URL:jdbc:postgresql://localhost:5432/fanime-creds}"
+    username: "${POSTGRES_USER:postgres}"
+    password: "${POSTGRES_PASSWORD:root}"
+  jpa:
+    hibernate:
+      ddl-auto: update
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info,health
+app:
+  security:
+    secret-key: "2A472D4A614E645267556B58703273357638792F423F4528482B4D6250655368"
+logging:
+  level:
+    org.springframework.security: DEBUG
