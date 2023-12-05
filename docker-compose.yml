@@ -64,7 +64,7 @@ services:
       context: anime-service
       dockerfile: Dockerfile
     ports:
-      - '8080:8080'
+      - '8081:8081'
     environment:
       MONGODB_USER: root
       MONGODB_PASS: root
@@ -82,7 +82,7 @@ services:
       context: user-service
       dockerfile: Dockerfile
     ports:
-      - '8081:8081'
+      - '8082:8082'
     environment:
       POSTGRES_URL: jdbc:postgresql://postgres:5432/fanime-users
       POSTGRES_USER: user
