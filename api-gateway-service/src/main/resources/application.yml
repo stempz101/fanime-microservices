@@ -6,10 +6,27 @@ spring:
   cloud:
     gateway:
       routes:
-        - id: anime-service-route
+        - id: auth-service-authenticate
+          uri: lb://auth-service
+          predicates:
+            - Path=/auth/authenticate
+            - Method=POST
+          filters:
+            - PrefixPath=/api/v1
+
+        - id: auth-service-register
+          uri: lb://auth-service
+          predicates:
+            - Path=/auth/register
+            - Method=POST
+          filters:
+            - PrefixPath=/api/v1
+
+        - id: anime-service-get-all
           uri: lb://anime-service
           predicates:
-            - Path=/animes/**
+            - Path=/animes
+            - Method=GET
           filters:
             - PrefixPath=/api/v1
 eureka:
