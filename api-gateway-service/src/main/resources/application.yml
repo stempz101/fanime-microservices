@@ -25,7 +25,7 @@ spring:
         - id: anime-service-get-all
           uri: lb://anime-service
           predicates:
-            - Path=/animes
+            - Path=/anime
             - Method=GET
           filters:
             - PrefixPath=/api/v1
