@@ -34,9 +34,9 @@ services:
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: pass
-      POSTGRES_DB: fanime-users
+      POSTGRES_DB: fanime-credentials
     volumes:
-      - users-volume:/var/lib/postgresql/data
+      - credentials-volume:/var/lib/postgresql/data
 
   discovery-service:
     container_name: discovery-service
@@ -58,6 +58,23 @@ services:
     depends_on:
       - discovery-service
 
+  auth-service:
+    container_name: auth-service
+    build:
+      context: auth-service
+      dockerfile: Dockerfile
+    ports:
+      - '8080:8080'
+    environment:
+      POSTGRES_URL: jdbc:postgresql://postgres:5432/fanime-credentials
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      DISCOVERY_URL: http://discovery-service:8761/eureka
+    depends_on:
+      - postgres
+      - discovery-service
+      - api-gateway-service
+
   anime-service:
     container_name: anime-service
     build:
@@ -76,23 +93,6 @@ services:
       - discovery-service
       - api-gateway-service
 
-  user-service:
-    container_name: user-service
-    build:
-      context: user-service
-      dockerfile: Dockerfile
-    ports:
-      - '8082:8082'
-    environment:
-      POSTGRES_URL: jdbc:postgresql://postgres:5432/fanime-users
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: pass
-      DISCOVERY_URL: http://discovery-service:8761/eureka
-    depends_on:
-      - postgres
-      - discovery-service
-      - api-gateway-service
-
 volumes:
+  credentials-volume:
   animes-volume:
-  users-volume:
