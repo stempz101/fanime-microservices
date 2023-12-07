@@ -1,5 +1,6 @@
 package org.stempz.fanime.utils;
 
+import java.util.Map;
 import org.stempz.fanime.dto.AuthenticationRequestDto;
 import org.stempz.fanime.dto.AuthenticationResponseDto;
 import org.stempz.fanime.dto.UserCredentialDto;
@@ -13,8 +14,12 @@ public class UserCredentialTestUtil {
   public static final String TEST_USER_USERNAME_1 = "testuser1";
   public static final String TEST_USER_PASSWORD_1 = "qwerty123";
   public static final String TEST_USER_ACTIVATION_CODE_1 = "activationCode1";
-  public static final String TEST_USER_JWT_1 = JwtUtil.generateToken(TEST_USER_EMAIL_1);
   public static final Role TEST_USER_ROLE_1 = Role.USER;
+  public static final Map<String, Object> TEST_USER_CLAIMS_1 = Map.of(
+      "userId", TEST_USER_ID_1,
+      "userRole", "ROLE_" + TEST_USER_ROLE_1.name()
+  );
+  public static final String TEST_USER_JWT_1 = JwtUtil.generateToken(TEST_USER_CLAIMS_1, TEST_USER_EMAIL_1);
 
   public static final long TEST_USER_ID_2 = 2;
   public static final String TEST_USER_EMAIL_2 = "test2@gmail.com";

@@ -13,6 +13,8 @@ import org.stempz.fanime.apigatewayservice.dto.AuthenticationResponseDto;
 @Component
 public class AuthenticationFilter extends AbstractGatewayFilterFactory<AuthenticationFilter.Config> {
 
+  private static final String TOKEN_PREFIX = "Bearer ";
+
   private final WebClient.Builder webClientBuilder;
 
   public AuthenticationFilter( WebClient.Builder webClientBuilder) {
@@ -40,7 +42,7 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
     return Optional.of(request.getHeaders())
         .map(headers -> headers.get(HttpHeaders.AUTHORIZATION))
         .map(header -> header.get(0))
-        .filter(token -> token.startsWith("Bearer "));
+        .filter(token -> token.startsWith(TOKEN_PREFIX));
   }
 
   private Optional<AuthenticationResponseDto> validateToken(String bearer) {
@@ -56,7 +58,7 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
   private ServerHttpRequest updateRequest(ServerWebExchange exchange, AuthenticationResponseDto response) {
     return exchange.getRequest()
         .mutate()
-        .header("loggedInUserEmail", response.email())
+        .header(HttpHeaders.AUTHORIZATION, TOKEN_PREFIX + response.jwt())
         .build();
   }
 

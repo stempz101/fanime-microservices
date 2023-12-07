@@ -35,7 +35,7 @@ public class UserCredentialServiceImpl implements UserCredentialService {
   public AuthenticationResponseDto authenticate(AuthenticationRequestDto authDto) {
     UserCredential userCredential = (UserCredential) authenticate(authDto.email(), authDto.password());
 
-    String jwt = jwtService.generateToken(userCredential);
+    String jwt = jwtService.generateToken(userCredential, userCredential.getId());
     return userCredentialMapper.mapToAuthenticationResponseDto(userCredential, jwt, true);
   }
 
@@ -62,7 +62,7 @@ public class UserCredentialServiceImpl implements UserCredentialService {
     userCredential = userCredentialRepo.save(userCredential);
 
     authenticate(userCredentialDto.email(), userCredentialDto.password());
-    String jwt = jwtService.generateToken(userCredential);
+    String jwt = jwtService.generateToken(userCredential, userCredential.getId());
     return userCredentialMapper.mapToAuthenticationResponseDto(userCredential, jwt, true);
   }
 

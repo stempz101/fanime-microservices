@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -69,7 +70,7 @@ public class UserCredentialServiceImplTest {
     // When
     when(authenticationProvider.authenticate(any())).thenReturn(authentication);
     when(authentication.getPrincipal()).thenReturn(userCredential);
-    when(jwtService.generateToken(any())).thenReturn(expectedResult.jwt());
+    when(jwtService.generateToken(any(), anyLong())).thenReturn(expectedResult.jwt());
     when(userCredentialMapper.mapToAuthenticationResponseDto(any(), anyString(), anyBoolean()))
         .thenReturn(expectedResult);
 
@@ -79,7 +80,7 @@ public class UserCredentialServiceImplTest {
     assertTrue(result.authenticated());
     verify(authenticationProvider, times(1)).authenticate(any());
     verify(authentication, times(1)).getPrincipal();
-    verify(jwtService, times(1)).generateToken(any());
+    verify(jwtService, times(1)).generateToken(any(), anyLong());
     verify(userCredentialMapper, times(1)).mapToAuthenticationResponseDto(any(), anyString(),
         anyBoolean());
 
@@ -117,7 +118,7 @@ public class UserCredentialServiceImplTest {
     when(userCredentialRepo.save(any())).thenReturn(userCredential);
     when(authenticationProvider.authenticate(any())).thenReturn(authentication);
     when(authentication.getPrincipal()).thenReturn(userCredential);
-    when(jwtService.generateToken(any())).thenReturn(expectedResult.jwt());
+    when(jwtService.generateToken(any(), anyLong())).thenReturn(expectedResult.jwt());
     when(userCredentialMapper.mapToAuthenticationResponseDto(any(), anyString(), anyBoolean()))
         .thenReturn(expectedResult);
 
@@ -132,7 +133,7 @@ public class UserCredentialServiceImplTest {
     verify(userCredentialRepo, times(1)).save(any());
     verify(authenticationProvider, times(1)).authenticate(any());
     verify(authentication, times(1)).getPrincipal();
-    verify(jwtService, times(1)).generateToken(any());
+    verify(jwtService, times(1)).generateToken(any(), anyLong());
     verify(userCredentialMapper, times(1)).mapToAuthenticationResponseDto(any(), anyString(),
         anyBoolean());
 

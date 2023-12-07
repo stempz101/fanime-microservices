@@ -14,6 +14,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -29,8 +30,12 @@ public class JwtService {
     return extractClaim(token, Claims::getSubject);
   }
 
-  public String generateToken(UserDetails userDetails) {
-    return generateToken(new HashMap<>(), userDetails);
+  public String generateToken(UserDetails userDetails, long userId) {
+    HashMap<String, Object> claims = new HashMap<>(Map.of("userId", userId));
+    getUserRole(userDetails)
+        .ifPresent(role -> claims.put("userRole", role));
+
+    return generateToken(claims, userDetails);
   }
 
   public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
@@ -77,5 +82,11 @@ public class JwtService {
     return Optional.ofNullable(request.getHeader(HttpHeaders.AUTHORIZATION))
         .filter(authHeader -> authHeader.startsWith("Bearer "))
         .map(authHeader -> authHeader.substring(7));
+  }
+
+  private static Optional<String> getUserRole(UserDetails userDetails) {
+    return userDetails.getAuthorities().stream()
+        .map(GrantedAuthority::getAuthority)
+        .findFirst();
   }
 }
