@@ -22,13 +22,23 @@ spring:
           filters:
             - PrefixPath=/api/v1
 
-        - id: anime-service-get-all
+        - id: anime-service-genres-get-all
           uri: lb://anime-service
           predicates:
-            - Path=/anime
+            - Path=/genres
             - Method=GET
           filters:
             - PrefixPath=/api/v1
+            - AuthenticationFilter
+
+        - id: anime-service-genres-create
+          uri: lb://anime-service
+          predicates:
+            - Path=/genres
+            - Method=POST
+          filters:
+            - PrefixPath=/api/v1/secured
+            - AuthenticationFilter
 eureka:
   client:
     service-url:

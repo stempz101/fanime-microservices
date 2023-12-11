@@ -1,6 +1,6 @@
 package org.stempz.fanime.apigatewayservice.filter;
 
-import java.util.Optional;
+import java.util.List;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
 import org.springframework.http.HttpHeaders;
@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ServerWebExchange;
 import org.stempz.fanime.apigatewayservice.dto.AuthenticationResponseDto;
+import reactor.core.publisher.Mono;
 
 @Component
 public class AuthenticationFilter extends AbstractGatewayFilterFactory<AuthenticationFilter.Config> {
@@ -25,33 +26,29 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
   @Override
   public GatewayFilter apply(Config config) {
     return (exchange, chain) -> {
-      ServerHttpRequest request = null;
+      ServerHttpRequest request = exchange.getRequest();
 
-      Optional<AuthenticationResponseDto> responseOpt = extractBearer(exchange.getRequest())
-          .flatMap(this::validateToken);
-
-      if (responseOpt.isPresent()) {
-        request = updateRequest(exchange, responseOpt.get());
-      }
-
-      return chain.filter(exchange.mutate().request(request).build());
+      return extractBearer(request)
+          .flatMap(this::validateToken)
+          .map(response -> updateRequest(exchange, response))
+          .defaultIfEmpty(request)
+          .flatMap(updatedRequest -> chain.filter(exchange.mutate().request(updatedRequest).build()));
     };
   }
 
-  private Optional<String> extractBearer(ServerHttpRequest request) {
-    return Optional.of(request.getHeaders())
-        .map(headers -> headers.get(HttpHeaders.AUTHORIZATION))
+  private Mono<String> extractBearer(ServerHttpRequest request) {
+    return Mono.justOrEmpty(request.getHeaders().get(HttpHeaders.AUTHORIZATION))
         .map(header -> header.get(0))
         .filter(token -> token.startsWith(TOKEN_PREFIX));
   }
 
-  private Optional<AuthenticationResponseDto> validateToken(String bearer) {
-    return webClientBuilder.build().get()
-        .uri("http://auth-service/api/v1/validate")
-        .header(HttpHeaders.AUTHORIZATION, bearer)
+  private Mono<AuthenticationResponseDto> validateToken(String bearer) {
+    return webClientBuilder
+        .build().get()
+        .uri("http://auth-service/api/v1/auth/validate")
+        .headers(headers -> headers.put(HttpHeaders.AUTHORIZATION, List.of(bearer)))
         .retrieve()
         .bodyToMono(AuthenticationResponseDto.class)
-        .blockOptional()
         .filter(AuthenticationResponseDto::authenticated);
   }
 
