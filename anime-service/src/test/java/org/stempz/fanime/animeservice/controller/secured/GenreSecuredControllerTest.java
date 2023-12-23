@@ -2,7 +2,6 @@ package org.stempz.fanime.animeservice.controller.secured;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -17,7 +16,6 @@ import static org.stempz.fanime.animeservice.utils.GenreTestUtil.getGenreDtoWith
 import static org.stempz.fanime.animeservice.utils.UserTestUtil.TEST_USER_JWT_1;
 import static org.stempz.fanime.animeservice.utils.UserTestUtil.TEST_USER_JWT_2;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -67,8 +65,7 @@ public class GenreSecuredControllerTest {
     ResultActions result = mockMvc.perform(post("/api/v1/secured/genres")
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(genreDto))
-        .header(HttpHeaders.AUTHORIZATION, "Bearer " + TEST_USER_JWT_1)
-        .with(csrf()));
+        .header(HttpHeaders.AUTHORIZATION, "Bearer " + TEST_USER_JWT_1));
 
     // Then
     result
@@ -90,8 +87,7 @@ public class GenreSecuredControllerTest {
     ResultActions result = mockMvc.perform(post("/api/v1/secured/genres")
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(genreDto))
-        .header(HttpHeaders.AUTHORIZATION, "Bearer " + TEST_USER_JWT_2)
-        .with(csrf()));
+        .header(HttpHeaders.AUTHORIZATION, "Bearer " + TEST_USER_JWT_2));
 
     // Then
     result
@@ -108,8 +104,7 @@ public class GenreSecuredControllerTest {
     ResultActions result = mockMvc.perform(post("/api/v1/secured/genres")
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(genreDto))
-        .header(HttpHeaders.AUTHORIZATION, "Bearer " + TEST_USER_JWT_1)
-        .with(csrf()));
+        .header(HttpHeaders.AUTHORIZATION, "Bearer " + TEST_USER_JWT_1));
 
     // Then
     result
@@ -126,8 +121,7 @@ public class GenreSecuredControllerTest {
     ResultActions result = mockMvc.perform(post("/api/v1/secured/genres")
         .contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(genreDto))
-        .header(HttpHeaders.AUTHORIZATION, "Bearer " + TEST_USER_JWT_1)
-        .with(csrf()));
+        .header(HttpHeaders.AUTHORIZATION, "Bearer " + TEST_USER_JWT_1));
 
     // Then
     result
