@@ -1,0 +1,27 @@
+package org.stempz.fanime.animeservice.service.impl;
+
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.stempz.fanime.animeservice.dto.StudioDto;
+import org.stempz.fanime.animeservice.mapper.StudioMapper;
+import org.stempz.fanime.animeservice.model.Studio;
+import org.stempz.fanime.animeservice.repo.StudioRepo;
+import org.stempz.fanime.animeservice.service.StudioService;
+
+@Service
+@RequiredArgsConstructor
+public class StudioServiceImpl implements StudioService {
+
+  private final StudioRepo studioRepo;
+  private final StudioMapper studioMapper;
+
+  public List<Studio> getAll() {
+    return studioRepo.findAll();
+  }
+
+  public Studio create(StudioDto studioDto) {
+    Studio studio = studioMapper.toStudio(studioDto);
+    return studioRepo.save(studio);
+  }
+}

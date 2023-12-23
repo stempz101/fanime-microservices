@@ -29,12 +29,28 @@ spring:
             - Method=GET
           filters:
             - PrefixPath=/api/v1
-            - AuthenticationFilter
 
         - id: anime-service-genres-create
           uri: lb://anime-service
           predicates:
             - Path=/genres
+            - Method=POST
+          filters:
+            - PrefixPath=/api/v1/secured
+            - AuthenticationFilter
+
+        - id: anime-service-studios-get-all
+          uri: lb://anime-service
+          predicates:
+            - Path=/studios
+            - Method=GET
+          filters:
+            - PrefixPath=/api/v1
+
+        - id: anime-service-studios-create
+          uri: lb://anime-service
+          predicates:
+            - Path=/studios
             - Method=POST
           filters:
             - PrefixPath=/api/v1/secured

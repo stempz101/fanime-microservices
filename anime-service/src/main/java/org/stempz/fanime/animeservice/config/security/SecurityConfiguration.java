@@ -25,7 +25,8 @@ public class SecurityConfiguration {
         .authorizeHttpRequests(authorize -> authorize
             .requestMatchers(
                 "/api/v1/anime/**",
-                "/api/v1/genres/**"
+                "/api/v1/genres/**",
+                "/api/v1/studios/**"
             ).permitAll()
             .requestMatchers(
                 "/api/v1/secured/**"
