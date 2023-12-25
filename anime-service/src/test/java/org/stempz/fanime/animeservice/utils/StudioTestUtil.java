@@ -1,19 +1,20 @@
 package org.stempz.fanime.animeservice.utils;
 
 import java.util.List;
+import java.util.stream.Stream;
 import org.stempz.fanime.animeservice.dto.StudioDto;
 import org.stempz.fanime.animeservice.model.Studio;
 
 public class StudioTestUtil {
 
   public static final String TEST_STUDIO_ID_1 = "1";
-  public static final String TEST_STUDIO_NAME_1 = "MAPPA";
+  public static final String TEST_STUDIO_NAME_1 = "A-1 Pictures";
 
   public static final String TEST_STUDIO_ID_2 = "2";
-  public static final String TEST_STUDIO_NAME_2 = "Wit Studio";
+  public static final String TEST_STUDIO_NAME_2 = "MAPPA";
 
   public static final String TEST_STUDIO_ID_3 = "3";
-  public static final String TEST_STUDIO_NAME_3 = "A-1 Pictures";
+  public static final String TEST_STUDIO_NAME_3 = "Wit Studio";
 
   public static Studio getStudio1() {
     return new Studio(TEST_STUDIO_ID_1, TEST_STUDIO_NAME_1);

@@ -1,6 +1,8 @@
 package org.stempz.fanime.animeservice.utils;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Stream;
 import org.stempz.fanime.animeservice.dto.GenreDto;
 import org.stempz.fanime.animeservice.model.Genre;
 
@@ -10,10 +12,10 @@ public class GenreTestUtil {
   public static final String TEST_GENRE_NAME_1 = "Action";
 
   public static final String TEST_GENRE_ID_2 = "2";
-  public static final String TEST_GENRE_NAME_2 = "Drama";
+  public static final String TEST_GENRE_NAME_2 = "Adventure";
 
   public static final String TEST_GENRE_ID_3 = "3";
-  public static final String TEST_GENRE_NAME_3 = "Adventure";
+  public static final String TEST_GENRE_NAME_3 = "Drama";
 
   public static Genre getGenre1() {
     return new Genre(TEST_GENRE_ID_1, TEST_GENRE_NAME_1);

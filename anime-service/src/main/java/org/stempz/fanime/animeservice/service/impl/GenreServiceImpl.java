@@ -2,6 +2,8 @@ package org.stempz.fanime.animeservice.service.impl;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.stempz.fanime.animeservice.dto.GenreDto;
 import org.stempz.fanime.animeservice.exception.GenreExistsException;
@@ -18,7 +20,7 @@ public class GenreServiceImpl implements GenreService {
   private final GenreMapper genreMapper;
 
   public List<Genre> getAll() {
-    return genreRepo.findAll();
+    return genreRepo.findAll(Sort.by(Direction.ASC, "name"));
   }
 
   public Genre create(GenreDto genreDto) {

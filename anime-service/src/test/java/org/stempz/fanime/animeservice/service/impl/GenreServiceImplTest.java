@@ -16,6 +16,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Sort;
 import org.stempz.fanime.animeservice.dto.GenreDto;
 import org.stempz.fanime.animeservice.exception.GenreExistsException;
 import org.stempz.fanime.animeservice.mapper.GenreMapper;
@@ -42,12 +43,12 @@ public class GenreServiceImplTest {
     List<Genre> expectedResult = GenreTestUtil.getGenreList();
 
     // When
-    when(genreRepo.findAll()).thenReturn(expectedResult);
+    when(genreRepo.findAll(any(Sort.class))).thenReturn(expectedResult);
 
     List<Genre> result = genreService.getAll();
 
     // Then
-    verify(genreRepo, times(1)).findAll();
+    verify(genreRepo, times(1)).findAll(any(Sort.class));
 
     assertThat(result, hasSize(expectedResult.size()));
     assertThat(result, hasItems(

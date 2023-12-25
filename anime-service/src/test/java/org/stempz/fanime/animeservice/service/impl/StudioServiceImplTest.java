@@ -22,6 +22,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Sort;
 import org.stempz.fanime.animeservice.dto.StudioDto;
 import org.stempz.fanime.animeservice.exception.StudioExistsException;
 import org.stempz.fanime.animeservice.mapper.StudioMapper;
@@ -46,12 +47,12 @@ public class StudioServiceImplTest {
     List<Studio> expectedResult = getStudioList();
 
     // When
-    when(studioRepo.findAll()).thenReturn(expectedResult);
+    when(studioRepo.findAll(any(Sort.class))).thenReturn(expectedResult);
 
     List<Studio> result = studioService.getAll();
 
     // Then
-    verify(studioRepo, times(1)).findAll();
+    verify(studioRepo, times(1)).findAll(any(Sort.class));
 
     assertThat(result, hasSize(expectedResult.size()));
     assertThat(result, hasItems(
