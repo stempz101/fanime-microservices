@@ -4,6 +4,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.stempz.fanime.animeservice.dto.GenreDto;
+import org.stempz.fanime.animeservice.exception.GenreExistsException;
 import org.stempz.fanime.animeservice.mapper.GenreMapper;
 import org.stempz.fanime.animeservice.model.Genre;
 import org.stempz.fanime.animeservice.repo.GenreRepo;
@@ -21,6 +22,10 @@ public class GenreServiceImpl implements GenreService {
   }
 
   public Genre create(GenreDto genreDto) {
+    if (genreRepo.existsByNameIgnoreCase(genreDto.name())) {
+      throw new GenreExistsException(genreDto.name());
+    }
+
     Genre genre = genreMapper.toGenre(genreDto);
     return genreRepo.save(genre);
   }

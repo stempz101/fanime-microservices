@@ -4,6 +4,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.stempz.fanime.animeservice.dto.StudioDto;
+import org.stempz.fanime.animeservice.exception.StudioExistsException;
 import org.stempz.fanime.animeservice.mapper.StudioMapper;
 import org.stempz.fanime.animeservice.model.Studio;
 import org.stempz.fanime.animeservice.repo.StudioRepo;
@@ -21,6 +22,10 @@ public class StudioServiceImpl implements StudioService {
   }
 
   public Studio create(StudioDto studioDto) {
+    if (studioRepo.existsByNameIgnoreCase(studioDto.name())) {
+      throw new StudioExistsException(studioDto.name());
+    }
+
     Studio studio = studioMapper.toStudio(studioDto);
     return studioRepo.save(studio);
   }

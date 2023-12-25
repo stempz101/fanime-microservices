@@ -1,5 +1,7 @@
 package org.stempz.fanime.animeservice.controller.secured;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -31,6 +33,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.stempz.fanime.animeservice.config.security.SecurityConfiguration;
 import org.stempz.fanime.animeservice.dto.GenreDto;
+import org.stempz.fanime.animeservice.exception.GenreExistsException;
 import org.stempz.fanime.animeservice.jwt.JwtService;
 import org.stempz.fanime.animeservice.model.Genre;
 import org.stempz.fanime.animeservice.service.GenreService;
@@ -127,5 +130,29 @@ public class GenreSecuredControllerTest {
     result
         .andDo(print())
         .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void create_GenreExists_Failure() throws Exception {
+    // Given
+    GenreDto genreDto = getGenreDto1();
+
+    // When
+    when(genreService.create(any())).thenThrow(new GenreExistsException(genreDto.name()));
+
+    ResultActions result = mockMvc.perform(post("/api/v1/secured/genres")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(genreDto))
+        .header(HttpHeaders.AUTHORIZATION, "Bearer " + TEST_USER_JWT_1));
+
+    // Then
+    result
+        .andDo(print())
+        .andExpectAll(
+            status().isBadRequest(),
+            content().contentType(MediaType.APPLICATION_JSON),
+            jsonPath("$").value(hasSize(1)),
+            jsonPath("$[0].message").value(containsString(genreDto.name()))
+        );
   }
 }

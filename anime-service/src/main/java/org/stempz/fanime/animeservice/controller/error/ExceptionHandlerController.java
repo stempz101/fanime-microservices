@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.stempz.fanime.animeservice.controller.util.ErrorUtil;
 import org.stempz.fanime.animeservice.dto.ErrorMessageDto;
+import org.stempz.fanime.animeservice.exception.GenreExistsException;
+import org.stempz.fanime.animeservice.exception.StudioExistsException;
 
 @RestControllerAdvice
 @Slf4j
@@ -19,5 +21,15 @@ public class ExceptionHandlerController {
   public List<ErrorMessageDto> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
     log.error("handleMethodArgumentNotValidException: exception {}", ex.getMessage(), ex);
     return ErrorUtil.collectErrorMessagesDto(ex.getBindingResult().getAllErrors());
+  }
+
+  @ExceptionHandler({
+      GenreExistsException.class,
+      StudioExistsException.class
+  })
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public List<ErrorMessageDto> handleEntityExistsException(Exception ex) {
+    log.error("handleEntityExistsException: exception {}", ex.getMessage(), ex);
+    return List.of(new ErrorMessageDto(ex.getMessage()));
   }
 }

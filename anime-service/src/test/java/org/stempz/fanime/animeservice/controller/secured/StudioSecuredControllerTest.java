@@ -1,5 +1,7 @@
 package org.stempz.fanime.animeservice.controller.secured;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -31,6 +33,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.stempz.fanime.animeservice.config.security.SecurityConfiguration;
 import org.stempz.fanime.animeservice.dto.StudioDto;
+import org.stempz.fanime.animeservice.exception.StudioExistsException;
 import org.stempz.fanime.animeservice.jwt.JwtService;
 import org.stempz.fanime.animeservice.model.Studio;
 import org.stempz.fanime.animeservice.service.StudioService;
@@ -127,5 +130,29 @@ public class StudioSecuredControllerTest {
     result
         .andDo(print())
         .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void create_StudioExists_Failure() throws Exception {
+    // Given
+    StudioDto studioDto = getStudioDto1();
+
+    // When
+    when(studioService.create(any())).thenThrow(new StudioExistsException(studioDto.name()));
+
+    ResultActions result = mockMvc.perform(post("/api/v1/secured/studios")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(studioDto))
+        .header(HttpHeaders.AUTHORIZATION, "Bearer " + TEST_USER_JWT_1));
+
+    // Then
+    result
+        .andDo(print())
+        .andExpectAll(
+            status().isBadRequest(),
+            content().contentType(MediaType.APPLICATION_JSON),
+            jsonPath("$").value(hasSize(1)),
+            jsonPath("$[0].message").value(containsString(studioDto.name()))
+        );
   }
 }

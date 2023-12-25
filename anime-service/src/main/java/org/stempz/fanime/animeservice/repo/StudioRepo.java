@@ -7,4 +7,5 @@ import org.stempz.fanime.animeservice.model.Studio;
 @Repository
 public interface StudioRepo extends MongoRepository<Studio, String> {
 
+  boolean existsByNameIgnoreCase(String name);
 }
