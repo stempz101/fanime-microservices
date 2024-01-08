@@ -1,6 +1,5 @@
 package org.stempz.fanime.animeservice.controller.secured;
 
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -9,14 +8,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.stempz.fanime.animeservice.utils.StudioTestUtil.TEST_STUDIO_ID_1;
-import static org.stempz.fanime.animeservice.utils.StudioTestUtil.TEST_STUDIO_NAME_1;
-import static org.stempz.fanime.animeservice.utils.StudioTestUtil.getStudio1;
-import static org.stempz.fanime.animeservice.utils.StudioTestUtil.getStudioDto1;
-import static org.stempz.fanime.animeservice.utils.StudioTestUtil.getStudioDtoWithEmptyName;
-import static org.stempz.fanime.animeservice.utils.StudioTestUtil.getStudioDtoWithNullName;
-import static org.stempz.fanime.animeservice.utils.UserTestUtil.TEST_USER_JWT_1;
-import static org.stempz.fanime.animeservice.utils.UserTestUtil.TEST_USER_JWT_2;
+import static org.stempz.fanime.animeservice.test.utils.StudioTestUtil.TEST_STUDIO_ID_1;
+import static org.stempz.fanime.animeservice.test.utils.StudioTestUtil.TEST_STUDIO_NAME_1;
+import static org.stempz.fanime.animeservice.test.utils.StudioTestUtil.getStudio1;
+import static org.stempz.fanime.animeservice.test.utils.StudioTestUtil.getStudioDto1;
+import static org.stempz.fanime.animeservice.test.utils.StudioTestUtil.getStudioDtoWithEmptyName;
+import static org.stempz.fanime.animeservice.test.utils.StudioTestUtil.getStudioDtoWithNullName;
+import static org.stempz.fanime.animeservice.test.utils.UserTestUtil.TEST_USER_JWT_1;
+import static org.stempz.fanime.animeservice.test.utils.UserTestUtil.TEST_USER_JWT_2;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -138,7 +137,7 @@ public class StudioSecuredControllerTest {
     StudioDto studioDto = getStudioDto1();
 
     // When
-    when(studioService.create(any())).thenThrow(new StudioExistsException(studioDto.name()));
+    when(studioService.create(any())).thenThrow(new StudioExistsException(studioDto.getName()));
 
     ResultActions result = mockMvc.perform(post("/api/v1/secured/studios")
         .contentType(MediaType.APPLICATION_JSON)
@@ -152,7 +151,8 @@ public class StudioSecuredControllerTest {
             status().isBadRequest(),
             content().contentType(MediaType.APPLICATION_JSON),
             jsonPath("$").value(hasSize(1)),
-            jsonPath("$[0].message").value(containsString(studioDto.name()))
+            jsonPath("$[0].message")
+                .value(String.format("Studio already exists by name: %s", studioDto.getName()))
         );
   }
 }

@@ -24,8 +24,8 @@ public class StudioServiceImpl implements StudioService {
   }
 
   public Studio create(StudioDto studioDto) {
-    if (studioRepo.existsByNameIgnoreCase(studioDto.name())) {
-      throw new StudioExistsException(studioDto.name());
+    if (studioRepo.existsByNameIgnoreCase(studioDto.getName())) {
+      throw new StudioExistsException(studioDto.getName());
     }
 
     Studio studio = studioMapper.toStudio(studioDto);

@@ -1,6 +1,5 @@
 package org.stempz.fanime.animeservice.controller.secured;
 
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -9,14 +8,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.stempz.fanime.animeservice.utils.GenreTestUtil.TEST_GENRE_ID_1;
-import static org.stempz.fanime.animeservice.utils.GenreTestUtil.TEST_GENRE_NAME_1;
-import static org.stempz.fanime.animeservice.utils.GenreTestUtil.getGenre1;
-import static org.stempz.fanime.animeservice.utils.GenreTestUtil.getGenreDto1;
-import static org.stempz.fanime.animeservice.utils.GenreTestUtil.getGenreDtoWithEmptyName;
-import static org.stempz.fanime.animeservice.utils.GenreTestUtil.getGenreDtoWithNullName;
-import static org.stempz.fanime.animeservice.utils.UserTestUtil.TEST_USER_JWT_1;
-import static org.stempz.fanime.animeservice.utils.UserTestUtil.TEST_USER_JWT_2;
+import static org.stempz.fanime.animeservice.test.utils.GenreTestUtil.TEST_GENRE_ID_1;
+import static org.stempz.fanime.animeservice.test.utils.GenreTestUtil.TEST_GENRE_NAME_1;
+import static org.stempz.fanime.animeservice.test.utils.GenreTestUtil.getGenre1;
+import static org.stempz.fanime.animeservice.test.utils.GenreTestUtil.getGenreDto1;
+import static org.stempz.fanime.animeservice.test.utils.GenreTestUtil.getGenreDtoWithEmptyName;
+import static org.stempz.fanime.animeservice.test.utils.GenreTestUtil.getGenreDtoWithNullName;
+import static org.stempz.fanime.animeservice.test.utils.UserTestUtil.TEST_USER_JWT_1;
+import static org.stempz.fanime.animeservice.test.utils.UserTestUtil.TEST_USER_JWT_2;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -138,7 +137,7 @@ public class GenreSecuredControllerTest {
     GenreDto genreDto = getGenreDto1();
 
     // When
-    when(genreService.create(any())).thenThrow(new GenreExistsException(genreDto.name()));
+    when(genreService.create(any())).thenThrow(new GenreExistsException(genreDto.getName()));
 
     ResultActions result = mockMvc.perform(post("/api/v1/secured/genres")
         .contentType(MediaType.APPLICATION_JSON)
@@ -152,7 +151,8 @@ public class GenreSecuredControllerTest {
             status().isBadRequest(),
             content().contentType(MediaType.APPLICATION_JSON),
             jsonPath("$").value(hasSize(1)),
-            jsonPath("$[0].message").value(containsString(genreDto.name()))
+            jsonPath("$[0].message")
+                .value(String.format("Genre already exists by name: %s", genreDto.getName()))
         );
   }
 }

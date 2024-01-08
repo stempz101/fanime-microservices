@@ -1,4 +1,4 @@
-package org.stempz.fanime.animeservice.utils;
+package org.stempz.fanime.animeservice.test.utils;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

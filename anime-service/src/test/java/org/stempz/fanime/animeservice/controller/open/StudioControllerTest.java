@@ -7,10 +7,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.stempz.fanime.animeservice.utils.StudioTestUtil.getStudio1;
-import static org.stempz.fanime.animeservice.utils.StudioTestUtil.getStudio2;
-import static org.stempz.fanime.animeservice.utils.StudioTestUtil.getStudio3;
-import static org.stempz.fanime.animeservice.utils.StudioTestUtil.getStudioList;
+import static org.stempz.fanime.animeservice.test.utils.StudioTestUtil.getStudio1;
+import static org.stempz.fanime.animeservice.test.utils.StudioTestUtil.getStudio2;
+import static org.stempz.fanime.animeservice.test.utils.StudioTestUtil.getStudio3;
+import static org.stempz.fanime.animeservice.test.utils.StudioTestUtil.getStudioList;
 
 import java.util.List;
 import org.junit.jupiter.api.Test;

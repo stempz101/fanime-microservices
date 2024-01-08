@@ -24,8 +24,8 @@ public class GenreServiceImpl implements GenreService {
   }
 
   public Genre create(GenreDto genreDto) {
-    if (genreRepo.existsByNameIgnoreCase(genreDto.name())) {
-      throw new GenreExistsException(genreDto.name());
+    if (genreRepo.existsByNameIgnoreCase(genreDto.getName())) {
+      throw new GenreExistsException(genreDto.getName());
     }
 
     Genre genre = genreMapper.toGenre(genreDto);

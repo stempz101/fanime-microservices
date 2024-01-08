@@ -9,12 +9,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.stempz.fanime.animeservice.utils.StudioTestUtil.getStudio1;
-import static org.stempz.fanime.animeservice.utils.StudioTestUtil.getStudio2;
-import static org.stempz.fanime.animeservice.utils.StudioTestUtil.getStudio3;
-import static org.stempz.fanime.animeservice.utils.StudioTestUtil.getStudioDto1;
-import static org.stempz.fanime.animeservice.utils.StudioTestUtil.getStudioList;
-import static org.stempz.fanime.animeservice.utils.StudioTestUtil.getStudioWithoutId1;
+import static org.stempz.fanime.animeservice.test.utils.StudioTestUtil.getStudio1;
+import static org.stempz.fanime.animeservice.test.utils.StudioTestUtil.getStudio2;
+import static org.stempz.fanime.animeservice.test.utils.StudioTestUtil.getStudio3;
+import static org.stempz.fanime.animeservice.test.utils.StudioTestUtil.getStudioDto1;
+import static org.stempz.fanime.animeservice.test.utils.StudioTestUtil.getStudioList;
+import static org.stempz.fanime.animeservice.test.utils.StudioTestUtil.getStudioWithoutId1;
 
 import java.util.List;
 import org.junit.jupiter.api.Test;

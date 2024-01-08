@@ -1,7 +1,6 @@
-package org.stempz.fanime.animeservice.utils;
+package org.stempz.fanime.animeservice.test.utils;
 
 import java.util.List;
-import java.util.stream.Stream;
 import org.stempz.fanime.animeservice.dto.StudioDto;
 import org.stempz.fanime.animeservice.model.Studio;
 

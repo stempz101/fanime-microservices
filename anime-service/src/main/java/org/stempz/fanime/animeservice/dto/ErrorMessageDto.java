@@ -1,5 +1,11 @@
 package org.stempz.fanime.animeservice.dto;
 
-public record ErrorMessageDto(String message) {
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
+@Data
+@AllArgsConstructor
+public class ErrorMessageDto {
+
+  private String message;
 }

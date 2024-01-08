@@ -1,42 +1,38 @@
-package org.stempz.fanime.animeservice.model;
+package org.stempz.fanime.animeservice.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.DBRef;
-import org.springframework.data.mongodb.core.mapping.Document;
+import org.stempz.fanime.animeservice.model.Genre;
+import org.stempz.fanime.animeservice.model.Studio;
 import org.stempz.fanime.animeservice.model.enums.Season;
 import org.stempz.fanime.animeservice.model.enums.Status;
 
-@Document(collection = "anime")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Anime {
+@JsonInclude(Include.NON_NULL)
+public class AnimeDto {
 
-  @Id
   private String id;
-  @Indexed
   private String title;
   private Status status;
   private String description;
-  @DBRef
   private List<Genre> genres;
-  @DBRef
   private Studio studio;
   private LocalDate startDate;
   private LocalDate endDate;
   private Season season;
-  private Integer seasonYear;
+  private int seasonYear;
   private int totalEpisodes;
   private int airedEpisodes;
-  private Integer duration;
-  private String coverImage;
-  private String bannerImage;
+  private int duration;
+//    String coverImage,
+//    String bannerImage
 }

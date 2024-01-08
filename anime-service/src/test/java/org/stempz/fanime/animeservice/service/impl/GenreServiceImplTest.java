@@ -22,8 +22,7 @@ import org.stempz.fanime.animeservice.exception.GenreExistsException;
 import org.stempz.fanime.animeservice.mapper.GenreMapper;
 import org.stempz.fanime.animeservice.model.Genre;
 import org.stempz.fanime.animeservice.repo.GenreRepo;
-import org.stempz.fanime.animeservice.service.impl.GenreServiceImpl;
-import org.stempz.fanime.animeservice.utils.GenreTestUtil;
+import org.stempz.fanime.animeservice.test.utils.GenreTestUtil;
 
 @ExtendWith(MockitoExtension.class)
 public class GenreServiceImplTest {

@@ -22,6 +22,14 @@ spring:
           filters:
             - PrefixPath=/api/v1
 
+        - id: anime-service-anime-create
+          uri: lb://anime-service
+          predicates:
+            - Path=/anime
+            - Method=POST
+          filters:
+            - PrefixPath=/api/v1/secured
+
         - id: anime-service-genres-get-all
           uri: lb://anime-service
           predicates:

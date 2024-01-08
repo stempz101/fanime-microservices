@@ -7,10 +7,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.stempz.fanime.animeservice.utils.GenreTestUtil.getGenre1;
-import static org.stempz.fanime.animeservice.utils.GenreTestUtil.getGenre2;
-import static org.stempz.fanime.animeservice.utils.GenreTestUtil.getGenre3;
-import static org.stempz.fanime.animeservice.utils.GenreTestUtil.getGenreList;
+import static org.stempz.fanime.animeservice.test.utils.GenreTestUtil.getGenre1;
+import static org.stempz.fanime.animeservice.test.utils.GenreTestUtil.getGenre2;
+import static org.stempz.fanime.animeservice.test.utils.GenreTestUtil.getGenre3;
+import static org.stempz.fanime.animeservice.test.utils.GenreTestUtil.getGenreList;
 
 import java.util.List;
 import org.junit.jupiter.api.Test;

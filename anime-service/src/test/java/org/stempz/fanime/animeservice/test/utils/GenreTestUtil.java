@@ -1,8 +1,6 @@
-package org.stempz.fanime.animeservice.utils;
+package org.stempz.fanime.animeservice.test.utils;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Stream;
 import org.stempz.fanime.animeservice.dto.GenreDto;
 import org.stempz.fanime.animeservice.model.Genre;
 
@@ -55,5 +53,9 @@ public class GenreTestUtil {
 
   public static List<Genre> getGenreList() {
     return List.of(getGenre1(), getGenre2(), getGenre3());
+  }
+
+  public static List<String> getGenreNameList() {
+    return List.of(getGenre1().getName(), getGenre2().getName(), getGenre3().getName());
   }
 }

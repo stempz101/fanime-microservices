@@ -1,4 +1,4 @@
-package org.stempz.fanime.animeservice.utils;
+package org.stempz.fanime.animeservice.test.utils;
 
 import java.util.Map;
 import org.stempz.fanime.animeservice.model.enums.Role;
