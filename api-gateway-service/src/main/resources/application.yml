@@ -22,6 +22,14 @@ spring:
           filters:
             - PrefixPath=/api/v1
 
+        - id: auth-service-verify
+          uri: lb://auth-service
+          predicates:
+            - Path=/auth/verify
+            - Method=GET
+          filters:
+            - PrefixPath=/api/v1
+
         - id: anime-service-anime-create
           uri: lb://anime-service
           predicates:

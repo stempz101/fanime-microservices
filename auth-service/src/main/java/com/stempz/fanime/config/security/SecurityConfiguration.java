@@ -27,7 +27,8 @@ public class SecurityConfiguration {
             .requestMatchers(
                 "/api/v1/auth/register",
                 "/api/v1/auth/authenticate",
-                "/api/v1/auth/validate"
+                "/api/v1/auth/validate",
+                "/api/v1/auth/verify"
             ).permitAll()
             .anyRequest().authenticated())
         .authenticationProvider(authenticationProvider)

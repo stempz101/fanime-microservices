@@ -1,0 +1,33 @@
+server:
+  port: 8888
+spring:
+  application:
+    name: mail-service
+  kafka:
+    bootstrap-servers: "${KAFKA_URL:localhost:9092}"
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    sender:
+      name: Fanime
+    username: fanime.sender@gmail.com
+    password: "${FANIME_EMAIL_PASSWORD}"
+    test-connection: true
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+eureka:
+  client:
+    service-url:
+      defaultZone: "${DISCOVERY_URL:http://localhost:8761/eureka}"
+management:
+  endpoints:
+    web:
+      exposure:
+        include: info,health
+app:
+  link:
+    email-verification: "${EMAIL_VERIFICATION_URL:http://localhost:8080/api/v1/auth/verify}"

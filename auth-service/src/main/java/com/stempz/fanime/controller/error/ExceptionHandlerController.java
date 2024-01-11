@@ -1,5 +1,7 @@
 package com.stempz.fanime.controller.error;
 
+import com.stempz.fanime.exception.UserAlreadyVerifiedException;
+import com.stempz.fanime.exception.UserNotFoundException;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -32,10 +34,20 @@ public class ExceptionHandlerController {
     return List.of(new ErrorMessageDto(ex.getMessage()));
   }
 
-  @ExceptionHandler(UserAlreadyExistsException.class)
+  @ExceptionHandler({
+      UserAlreadyExistsException.class,
+      UserAlreadyVerifiedException.class
+  })
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public List<ErrorMessageDto> handleUserAlreadyExistsException(Exception ex) {
-    log.error("handleUserAlreadyExistsException: exception {}", ex.getMessage(), ex);
+  public List<ErrorMessageDto> handleBadRequestException(Exception ex) {
+    log.error("handleBadRequestException: exception {}", ex.getMessage(), ex);
+    return List.of(new ErrorMessageDto(ex.getMessage()));
+  }
+
+  @ExceptionHandler(UserNotFoundException.class)
+  @ResponseStatus(HttpStatus.NOT_FOUND)
+  public List<ErrorMessageDto> handleUserNotFoundException(Exception ex) {
+    log.error("handleUserNotFoundException: exception {}", ex.getMessage(), ex);
     return List.of(new ErrorMessageDto(ex.getMessage()));
   }
 }

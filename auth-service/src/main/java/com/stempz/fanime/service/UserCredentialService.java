@@ -11,5 +11,7 @@ public interface UserCredentialService {
 
   AuthenticationResponseDto register(UserCredentialDto userCredentialDto);
 
+  void verify(String token);
+
   AuthenticationResponseDto validate(HttpServletRequest request);
 }

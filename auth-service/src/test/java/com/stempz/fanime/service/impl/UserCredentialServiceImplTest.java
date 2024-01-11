@@ -14,6 +14,18 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.stempz.fanime.dto.AuthenticationRequestDto;
+import com.stempz.fanime.dto.AuthenticationResponseDto;
+import com.stempz.fanime.dto.EmailVerificationDto;
+import com.stempz.fanime.dto.UserCredentialDto;
+import com.stempz.fanime.exception.UserAlreadyVerifiedException;
+import com.stempz.fanime.exception.UserAlreadyExistsException;
+import com.stempz.fanime.exception.UserNotFoundException;
+import com.stempz.fanime.jwt.JwtService;
+import com.stempz.fanime.mapper.UserCredentialMapper;
+import com.stempz.fanime.model.UserCredential;
+import com.stempz.fanime.repository.UserCredentialRepo;
+import com.stempz.fanime.utils.UserCredentialTestUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -21,21 +33,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import com.stempz.fanime.dto.AuthenticationRequestDto;
-import com.stempz.fanime.dto.AuthenticationResponseDto;
-import com.stempz.fanime.dto.UserCredentialDto;
-import com.stempz.fanime.exception.UserAlreadyExistsException;
-import com.stempz.fanime.jwt.JwtService;
-import com.stempz.fanime.mapper.UserCredentialMapper;
-import com.stempz.fanime.model.UserCredential;
-import com.stempz.fanime.repository.UserCredentialRepo;
-import com.stempz.fanime.utils.UserCredentialTestUtil;
 
 @ExtendWith(MockitoExtension.class)
 public class UserCredentialServiceImplTest {
@@ -57,6 +61,9 @@ public class UserCredentialServiceImplTest {
 
   @Mock
   private PasswordEncoder passwordEncoder;
+
+  @Mock
+  private KafkaTemplate<String, EmailVerificationDto> emailVerificationKafkaTemplate;
 
   @Test
   void authenticate_Success() {
@@ -134,6 +141,7 @@ public class UserCredentialServiceImplTest {
     verify(authenticationProvider, times(1)).authenticate(any());
     verify(authentication, times(1)).getPrincipal();
     verify(jwtService, times(1)).generateToken(any(), anyLong());
+    verify(emailVerificationKafkaTemplate, times(1)).send(any(), any());
     verify(userCredentialMapper, times(1)).mapToAuthenticationResponseDto(any(), anyString(),
         anyBoolean());
 
@@ -185,6 +193,50 @@ public class UserCredentialServiceImplTest {
     // Then
     assertThrows(BadCredentialsException.class,
         () -> userCredentialService.register(userCredentialDto));
+  }
+
+  @Test
+  void verify_Success() {
+    // Given
+    UserCredential userCredential = UserCredentialTestUtil.getUserCredential2();
+    UserCredential userCredentialVerified = UserCredentialTestUtil.getUserCredentialVerified2();
+
+    // When
+    when(userCredentialRepo.findByVerificationToken(any())).thenReturn(Optional.of(userCredential));
+    when(userCredentialRepo.save(any())).thenReturn(userCredentialVerified);
+
+    userCredentialService.verify(userCredential.getVerificationToken().toString());
+
+    // Then
+    verify(userCredentialRepo, times(1)).findByVerificationToken(any());
+    verify(userCredentialRepo, times(1)).save(any());
+  }
+
+  @Test
+  void verify_UserNotFound_Failure() {
+    // Given
+    UserCredential userCredential = UserCredentialTestUtil.getUserCredential2();
+
+    // When
+    when(userCredentialRepo.findByVerificationToken(any())).thenReturn(Optional.empty());
+
+    // Then
+    assertThrows(UserNotFoundException.class,
+        () -> userCredentialService.verify(userCredential.getVerificationToken().toString()));
+  }
+
+  @Test
+  void verify_UserAlreadyVerified_Failure() {
+    // Given
+    UserCredential userCredential = UserCredentialTestUtil.getUserCredential2();
+    userCredential.setVerified(true);
+
+    // When
+    when(userCredentialRepo.findByVerificationToken(any())).thenReturn(Optional.of(userCredential));
+
+    // Then
+    assertThrows(UserAlreadyVerifiedException.class,
+        () -> userCredentialService.verify(userCredential.getVerificationToken().toString()));
   }
 
   @Test
