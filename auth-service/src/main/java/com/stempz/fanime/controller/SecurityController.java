@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.stempz.fanime.dto.AuthenticationRequestDto;
 import com.stempz.fanime.dto.AuthenticationResponseDto;
@@ -29,6 +30,11 @@ public class SecurityController {
   @PostMapping("/register")
   public AuthenticationResponseDto register(@RequestBody @Valid UserCredentialDto userCredentialDto) {
     return userCredentialService.register(userCredentialDto);
+  }
+
+  @GetMapping("/verify")
+  public void verify(@RequestParam String token) {
+    userCredentialService.verify(token);
   }
 
   @GetMapping("/validate")

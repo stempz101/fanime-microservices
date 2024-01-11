@@ -25,6 +25,7 @@ public interface UserCredentialMapper {
         .username(userCredential.get_username())
         .jwt(jwt)
         .role(userCredential.getRole())
+        .verified(userCredential.isVerified())
         .build();
   }
 }

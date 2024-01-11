@@ -1,6 +1,7 @@
 package com.stempz.fanime.repository;
 
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
@@ -10,6 +11,8 @@ import com.stempz.fanime.model.UserCredential;
 public interface UserCredentialRepo extends CrudRepository<UserCredential, Long> {
 
   Optional<UserCredential> findByEmailIgnoreCase(String email);
+
+  Optional<UserCredential> findByVerificationToken(UUID verificationToken);
 
   boolean existsByEmailIgnoreCase(String email);
 

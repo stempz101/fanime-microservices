@@ -7,8 +7,10 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -38,11 +40,14 @@ public class UserCredential implements UserDetails {
   @Column(nullable = false)
   private String password;
 
-  private String activationCode;
-
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
   private Role role;
+
+  @Column(unique = true)
+  private UUID verificationToken;
+
+  private boolean verified;
 
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {

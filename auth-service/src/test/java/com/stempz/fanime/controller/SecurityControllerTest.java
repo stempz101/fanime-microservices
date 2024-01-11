@@ -1,16 +1,5 @@
 package com.stempz.fanime.controller;
 
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static com.stempz.fanime.utils.ErrorMessageTestUtil.BAD_CREDENTIALS;
 import static com.stempz.fanime.utils.ErrorMessageTestUtil.EMAIL_NOT_BLANK;
 import static com.stempz.fanime.utils.ErrorMessageTestUtil.EMAIL_WELL_FORMED;
@@ -27,37 +16,62 @@ import static com.stempz.fanime.utils.UserCredentialTestUtil.TEST_USER_USERNAME_
 import static com.stempz.fanime.utils.UserCredentialTestUtil.getAuthenticationRequestDto1;
 import static com.stempz.fanime.utils.UserCredentialTestUtil.getAuthenticationRequestDto2;
 import static com.stempz.fanime.utils.UserCredentialTestUtil.getAuthenticationResponseDto1;
+import static com.stempz.fanime.utils.UserCredentialTestUtil.getUserCredential1;
+import static com.stempz.fanime.utils.UserCredentialTestUtil.getUserCredential2;
 import static com.stempz.fanime.utils.UserCredentialTestUtil.getUserCredentialDto1;
 import static com.stempz.fanime.utils.UserCredentialTestUtil.getUserCredentialDto2;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.stempz.fanime.config.security.SecurityBeansConfiguration;
+import com.stempz.fanime.config.security.SecurityConfiguration;
+import com.stempz.fanime.dto.AuthenticationRequestDto;
+import com.stempz.fanime.dto.AuthenticationResponseDto;
+import com.stempz.fanime.dto.UserCredentialDto;
+import com.stempz.fanime.exception.UserAlreadyExistsException;
+import com.stempz.fanime.exception.UserAlreadyExistsException.FieldType;
+import com.stempz.fanime.exception.UserAlreadyVerifiedException;
+import com.stempz.fanime.exception.UserNotFoundException;
+import com.stempz.fanime.jwt.JwtService;
+import com.stempz.fanime.model.UserCredential;
+import com.stempz.fanime.repository.UserCredentialRepo;
+import com.stempz.fanime.service.UserCredentialService;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import com.stempz.fanime.dto.AuthenticationRequestDto;
-import com.stempz.fanime.dto.AuthenticationResponseDto;
-import com.stempz.fanime.dto.UserCredentialDto;
-import com.stempz.fanime.exception.UserAlreadyExistsException;
-import com.stempz.fanime.exception.UserAlreadyExistsException.FieldType;
-import com.stempz.fanime.jwt.JwtService;
-import com.stempz.fanime.service.UserCredentialService;
 
 @ExtendWith(SpringExtension.class)
-@WebMvcTest(value = SecurityController.class)
+@WebMvcTest(SecurityController.class)
+@Import({SecurityBeansConfiguration.class, SecurityConfiguration.class})
 public class SecurityControllerTest {
 
   @MockBean
   private UserCredentialService userCredentialService;
+
+  @MockBean
+  private UserCredentialRepo userCredentialRepo;
 
   @SpyBean
   private JwtService jwtService;
@@ -69,19 +83,20 @@ public class SecurityControllerTest {
   private ObjectMapper objectMapper;
 
   @Test
-  @WithMockUser
   void authenticate_Success() throws Exception {
     // Given
     AuthenticationRequestDto authDto = getAuthenticationRequestDto1();
+    UserCredential userCredential = getUserCredential1();
+
     AuthenticationResponseDto expectedResult = getAuthenticationResponseDto1();
 
     // When
+    when(userCredentialRepo.findByEmailIgnoreCase(any())).thenReturn(Optional.of(userCredential));
     when(userCredentialService.authenticate(any())).thenReturn(expectedResult);
 
     ResultActions result = mockMvc.perform(post("/api/v1/auth/authenticate")
         .contentType(MediaType.APPLICATION_JSON)
-        .content(objectMapper.writeValueAsString(authDto))
-        .with(csrf()));
+        .content(objectMapper.writeValueAsString(authDto)));
 
     // Then
     result
@@ -99,19 +114,19 @@ public class SecurityControllerTest {
   }
 
   @Test
-  @WithMockUser
   void authenticate_BadCredentials_Failure() throws Exception {
     // Given
     AuthenticationRequestDto authDto = getAuthenticationRequestDto2();
+    UserCredential userCredential = getUserCredential1();
 
     // When
+    when(userCredentialRepo.findByEmailIgnoreCase(any())).thenReturn(Optional.of(userCredential));
     when(userCredentialService.authenticate(any())).thenThrow(
         new BadCredentialsException(BAD_CREDENTIALS));
 
     ResultActions result = mockMvc.perform(post("/api/v1/auth/authenticate")
         .contentType(MediaType.APPLICATION_JSON)
-        .content(objectMapper.writeValueAsString(authDto))
-        .with(csrf()));
+        .content(objectMapper.writeValueAsString(authDto)));
 
     // Then
     result
@@ -125,7 +140,6 @@ public class SecurityControllerTest {
   }
 
   @Test
-  @WithMockUser
   void register_Success() throws Exception {
     // Given
     UserCredentialDto userCredentialDto = getUserCredentialDto1();
@@ -136,8 +150,7 @@ public class SecurityControllerTest {
 
     ResultActions result = mockMvc.perform(post("/api/v1/auth/register")
         .contentType(MediaType.APPLICATION_JSON)
-        .content(objectMapper.writeValueAsString(userCredentialDto))
-        .with(csrf()));
+        .content(objectMapper.writeValueAsString(userCredentialDto)));
 
     // Then
     result
@@ -155,7 +168,6 @@ public class SecurityControllerTest {
   }
 
   @Test
-  @WithMockUser
   void register_AllFieldsNull_Failure() throws Exception {
     // Given
     UserCredentialDto userCredentialDto = new UserCredentialDto(null, null, null);
@@ -163,8 +175,7 @@ public class SecurityControllerTest {
     // When
     ResultActions result = mockMvc.perform(post("/api/v1/auth/register")
         .contentType(MediaType.APPLICATION_JSON)
-        .content(objectMapper.writeValueAsString(userCredentialDto))
-        .with(csrf()));
+        .content(objectMapper.writeValueAsString(userCredentialDto)));
 
     // Then
     result
@@ -182,7 +193,6 @@ public class SecurityControllerTest {
   }
 
   @Test
-  @WithMockUser
   void register_AllFieldsBlank_Failure() throws Exception {
     // Given
     UserCredentialDto userCredentialDto = new UserCredentialDto("", "", new char[0]);
@@ -190,8 +200,7 @@ public class SecurityControllerTest {
     // When
     ResultActions result = mockMvc.perform(post("/api/v1/auth/register")
         .contentType(MediaType.APPLICATION_JSON)
-        .content(objectMapper.writeValueAsString(userCredentialDto))
-        .with(csrf()));
+        .content(objectMapper.writeValueAsString(userCredentialDto)));
 
     // Then
     result
@@ -209,7 +218,6 @@ public class SecurityControllerTest {
   }
 
   @Test
-  @WithMockUser
   void register_InvalidEmail_Failure() throws Exception {
     // Given
     UserCredentialDto userCredentialDto = new UserCredentialDto("testgmail.com",
@@ -218,8 +226,7 @@ public class SecurityControllerTest {
     // When
     ResultActions result = mockMvc.perform(post("/api/v1/auth/register")
         .contentType(MediaType.APPLICATION_JSON)
-        .content(objectMapper.writeValueAsString(userCredentialDto))
-        .with(csrf()));
+        .content(objectMapper.writeValueAsString(userCredentialDto)));
 
     // Then
     result
@@ -233,7 +240,6 @@ public class SecurityControllerTest {
   }
 
   @Test
-  @WithMockUser
   void register_InvalidPassword_LessThan8Symbols_Failure() throws Exception {
     // Given
     UserCredentialDto userCredentialDto = new UserCredentialDto(TEST_USER_EMAIL_1,
@@ -242,8 +248,7 @@ public class SecurityControllerTest {
     // When
     ResultActions result = mockMvc.perform(post("/api/v1/auth/register")
         .contentType(MediaType.APPLICATION_JSON)
-        .content(objectMapper.writeValueAsString(userCredentialDto))
-        .with(csrf()));
+        .content(objectMapper.writeValueAsString(userCredentialDto)));
 
     // Then
     result
@@ -257,7 +262,6 @@ public class SecurityControllerTest {
   }
 
   @Test
-  @WithMockUser
   void register_InvalidPassword_WithoutLetters_Failure() throws Exception {
     // Given
     UserCredentialDto userCredentialDto = new UserCredentialDto(TEST_USER_EMAIL_1,
@@ -266,8 +270,7 @@ public class SecurityControllerTest {
     // When
     ResultActions result = mockMvc.perform(post("/api/v1/auth/register")
         .contentType(MediaType.APPLICATION_JSON)
-        .content(objectMapper.writeValueAsString(userCredentialDto))
-        .with(csrf()));
+        .content(objectMapper.writeValueAsString(userCredentialDto)));
 
     // Then
     result
@@ -281,7 +284,6 @@ public class SecurityControllerTest {
   }
 
   @Test
-  @WithMockUser
   void register_InvalidPassword_WithoutDigits_Failure() throws Exception {
     // Given
     UserCredentialDto userCredentialDto = new UserCredentialDto(TEST_USER_EMAIL_1,
@@ -290,8 +292,7 @@ public class SecurityControllerTest {
     // When
     ResultActions result = mockMvc.perform(post("/api/v1/auth/register")
         .contentType(MediaType.APPLICATION_JSON)
-        .content(objectMapper.writeValueAsString(userCredentialDto))
-        .with(csrf()));
+        .content(objectMapper.writeValueAsString(userCredentialDto)));
 
     // Then
     result
@@ -305,8 +306,7 @@ public class SecurityControllerTest {
   }
 
   @Test
-  @WithMockUser
-  void register_ExistedByEmail_Failure() throws Exception {
+  void register_ExistsByEmail_Failure() throws Exception {
     // Given
     UserCredentialDto userCredentialDto = getUserCredentialDto2();
     String expectedErrorMessage = String.format(USER_EXISTS_FORMAT,
@@ -318,8 +318,7 @@ public class SecurityControllerTest {
 
     ResultActions result = mockMvc.perform(post("/api/v1/auth/register")
         .contentType(MediaType.APPLICATION_JSON)
-        .content(objectMapper.writeValueAsString(userCredentialDto))
-        .with(csrf()));
+        .content(objectMapper.writeValueAsString(userCredentialDto)));
 
     // Then
     result
@@ -333,8 +332,7 @@ public class SecurityControllerTest {
   }
 
   @Test
-  @WithMockUser
-  void register_ExistedByUsername_Failure() throws Exception {
+  void register_ExistsByUsername_Failure() throws Exception {
     // Given
     UserCredentialDto userCredentialDto = getUserCredentialDto2();
     String expectedErrorMessage = String.format(USER_EXISTS_FORMAT,
@@ -346,8 +344,7 @@ public class SecurityControllerTest {
 
     ResultActions result = mockMvc.perform(post("/api/v1/auth/register")
         .contentType(MediaType.APPLICATION_JSON)
-        .content(objectMapper.writeValueAsString(userCredentialDto))
-        .with(csrf()));
+        .content(objectMapper.writeValueAsString(userCredentialDto)));
 
     // Then
     result
@@ -361,18 +358,103 @@ public class SecurityControllerTest {
   }
 
   @Test
-  @WithMockUser
+  void verify_Success() throws Exception {
+    // Given
+    UserCredential userCredential = getUserCredential1();
+
+    // When
+    doNothing().when(userCredentialService)
+        .verify(userCredential.getVerificationToken().toString());
+
+    ResultActions result = mockMvc.perform(get("/api/v1/auth/verify")
+        .param("token", userCredential.getVerificationToken().toString()));
+
+    // Then
+    result
+        .andDo(print())
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  void verify_WithoutTokenParam_Failure() throws Exception {
+    // Given
+    UserCredential userCredential = getUserCredential2();
+
+    // When
+    doNothing().when(userCredentialService)
+        .verify(userCredential.getVerificationToken().toString());
+
+    ResultActions result = mockMvc.perform(get("/api/v1/auth/verify"));
+
+    // Then
+    result
+        .andDo(print())
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void verify_UserNotFound_Failure() throws Exception {
+    // Given
+    UserCredential userCredential = getUserCredential2();
+
+    // When
+    doThrow(new UserNotFoundException(userCredential.getVerificationToken().toString()))
+        .when(userCredentialService).verify(userCredential.getVerificationToken().toString());
+
+    ResultActions result = mockMvc.perform(get("/api/v1/auth/verify")
+        .param("token", userCredential.getVerificationToken().toString()));
+
+    // Then
+    result
+        .andDo(print())
+        .andExpectAll(
+            status().isNotFound(),
+            content().contentType(MediaType.APPLICATION_JSON),
+            jsonPath("$").value(hasSize(1)),
+            jsonPath("$[0].message")
+                .value(String.format("User is not found by token: %s",
+                    userCredential.getVerificationToken().toString()))
+        );
+  }
+
+  @Test
+  void verify_UserAlreadyVerified_Failure() throws Exception {
+    // Given
+    UserCredential userCredential = getUserCredential1();
+
+    // When
+    doThrow(new UserAlreadyVerifiedException(userCredential.get_username()))
+        .when(userCredentialService).verify(userCredential.getVerificationToken().toString());
+
+    ResultActions result = mockMvc.perform(get("/api/v1/auth/verify")
+        .param("token", userCredential.getVerificationToken().toString()));
+
+    // Then
+    result
+        .andDo(print())
+        .andExpectAll(
+            status().isBadRequest(),
+            content().contentType(MediaType.APPLICATION_JSON),
+            jsonPath("$").value(hasSize(1)),
+            jsonPath("$[0].message")
+                .value(String.format("User with username \"%s\" is already verified",
+                    userCredential.get_username()))
+        );
+  }
+
+  @Test
   void validateToken_Authenticated_Success() throws Exception {
     // Given
     AuthenticationResponseDto expectedResult = getAuthenticationResponseDto1();
+    UserCredential userCredential = getUserCredential1();
 
     // When
+    when(userCredentialRepo.findByEmailIgnoreCase(any())).thenReturn(Optional.of(userCredential));
     when(userCredentialService.validate(any())).thenReturn(expectedResult);
 
     ResultActions result = mockMvc.perform(get("/api/v1/auth/validate")
         .contentType(MediaType.APPLICATION_JSON)
-        .header(HttpHeaders.AUTHORIZATION, "Bearer " + TEST_USER_JWT_1)
-        .with(csrf()));
+        .header(HttpHeaders.AUTHORIZATION, "Bearer " + TEST_USER_JWT_1));
 
     // Then
     result
@@ -390,17 +472,17 @@ public class SecurityControllerTest {
   }
 
   @Test
-  @WithMockUser
   void validateToken_Unauthenticated_Success() throws Exception {
     // Given
     AuthenticationResponseDto expectedResult = new AuthenticationResponseDto(false);
+    UserCredential userCredential = getUserCredential1();
 
     // When
+    when(userCredentialRepo.findByEmailIgnoreCase(any())).thenReturn(Optional.of(userCredential));
     when(userCredentialService.validate(any())).thenReturn(expectedResult);
 
     ResultActions result = mockMvc.perform(get("/api/v1/auth/validate")
-        .contentType(MediaType.APPLICATION_JSON)
-        .with(csrf()));
+        .contentType(MediaType.APPLICATION_JSON));
 
     // Then
     result

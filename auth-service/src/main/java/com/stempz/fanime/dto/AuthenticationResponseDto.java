@@ -13,10 +13,11 @@ public record AuthenticationResponseDto(
     String email,
     String username,
     String jwt,
-    Role role
+    Role role,
+    Boolean verified
 ) {
 
   public AuthenticationResponseDto(boolean authenticated) {
-    this(authenticated, null, null, null, null, null);
+    this(authenticated, null, null, null, null, null, null);
   }
 }
