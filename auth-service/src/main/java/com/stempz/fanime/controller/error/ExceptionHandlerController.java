@@ -1,5 +1,7 @@
 package com.stempz.fanime.controller.error;
 
+import com.stempz.fanime.exception.PasswordResetTokenExpiredException;
+import com.stempz.fanime.exception.PasswordResetTokenNotFoundException;
 import com.stempz.fanime.exception.UserAlreadyVerifiedException;
 import com.stempz.fanime.exception.UserNotFoundException;
 import java.util.List;
@@ -36,7 +38,8 @@ public class ExceptionHandlerController {
 
   @ExceptionHandler({
       UserAlreadyExistsException.class,
-      UserAlreadyVerifiedException.class
+      UserAlreadyVerifiedException.class,
+      PasswordResetTokenExpiredException.class
   })
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public List<ErrorMessageDto> handleBadRequestException(Exception ex) {
@@ -44,10 +47,13 @@ public class ExceptionHandlerController {
     return List.of(new ErrorMessageDto(ex.getMessage()));
   }
 
-  @ExceptionHandler(UserNotFoundException.class)
+  @ExceptionHandler({
+      UserNotFoundException.class,
+      PasswordResetTokenNotFoundException.class
+  })
   @ResponseStatus(HttpStatus.NOT_FOUND)
-  public List<ErrorMessageDto> handleUserNotFoundException(Exception ex) {
-    log.error("handleUserNotFoundException: exception {}", ex.getMessage(), ex);
+  public List<ErrorMessageDto> handleNotFoundException(Exception ex) {
+    log.error("handleNotFoundException: exception {}", ex.getMessage(), ex);
     return List.of(new ErrorMessageDto(ex.getMessage()));
   }
 }

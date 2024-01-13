@@ -1,6 +1,6 @@
 package com.stempz.fanime.service;
 
-import com.stempz.fanime.dto.EmailVerificationDto;
+import com.stempz.fanime.dto.EmailWithTokenDto;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
@@ -31,12 +31,15 @@ public class EmailService {
   @Value("${app.link.email-verification}")
   private String emailVerificationLink;
 
-  public void sendEmailVerificationLink(EmailVerificationDto emailVerificationDto) {
+  @Value("${app.link.reset-password}")
+  private String resetPasswordLink;
+
+  public void sendEmailVerificationLink(EmailWithTokenDto emailWithTokenDto) {
     try {
       MimeMessage message = javaMailSender.createMimeMessage();
       MimeMessageHelper helper = new MimeMessageHelper(message);
       helper.setFrom(new InternetAddress(senderEmail, senderName));
-      helper.setTo(emailVerificationDto.email());
+      helper.setTo(emailWithTokenDto.email());
       helper.setSubject("Fanime: New Account Verification");
 
       Context context = new Context();
@@ -44,7 +47,7 @@ public class EmailService {
           String.format(
               "%s?token=%s",
               emailVerificationLink,
-              emailVerificationDto.verificationToken().toString()
+              emailWithTokenDto.token().toString()
           )
       );
       String htmlBody = templateEngine.process("email-verification-template", context);
@@ -52,12 +55,41 @@ public class EmailService {
       helper.setText(htmlBody, true);
 
       log.info("Sending an email verification link to the specified email: {}",
-          emailVerificationDto.email());
+          emailWithTokenDto.email());
       javaMailSender.send(message);
-      log.info("Email verification link successfully sent to {}", emailVerificationDto.email());
+      log.info("Email verification link successfully sent to {}", emailWithTokenDto.email());
     } catch (MessagingException | UnsupportedEncodingException e) {
-      log.error("Failed to send registration confirmation link to {}",
-          emailVerificationDto.email());
+      log.error("Failed to send registration confirmation link to {}", emailWithTokenDto.email());
+      throw new RuntimeException(e);
+    }
+  }
+
+  public void sendResetInstructions(EmailWithTokenDto emailWithTokenDto) {
+    try {
+      MimeMessage message = javaMailSender.createMimeMessage();
+      MimeMessageHelper helper = new MimeMessageHelper(message);
+      helper.setFrom(new InternetAddress(senderEmail, senderName));
+      helper.setTo(emailWithTokenDto.email());
+      helper.setSubject("Fanime: Password reset instructions");
+
+      Context context = new Context();
+      context.setVariable("resetPasswordLink",
+          String.format(
+              "%s?token=%s",
+              resetPasswordLink,
+              emailWithTokenDto.token().toString()
+          )
+      );
+      String htmlBody = templateEngine.process("reset-instructions-template", context);
+
+      helper.setText(htmlBody, true);
+
+      log.info("Sending reset instructions to the specified email: {}",
+          emailWithTokenDto.email());
+      javaMailSender.send(message);
+      log.info("Reset instructions successfully sent to {}", emailWithTokenDto.email());
+    } catch (MessagingException | UnsupportedEncodingException e) {
+      log.error("Failed to send reset instructions to {}", emailWithTokenDto.email());
       throw new RuntimeException(e);
     }
   }

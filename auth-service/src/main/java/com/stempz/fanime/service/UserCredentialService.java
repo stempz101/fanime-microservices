@@ -1,5 +1,7 @@
 package com.stempz.fanime.service;
 
+import com.stempz.fanime.dto.ResetPasswordDto;
+import com.stempz.fanime.dto.UserEmailDto;
 import jakarta.servlet.http.HttpServletRequest;
 import com.stempz.fanime.dto.AuthenticationRequestDto;
 import com.stempz.fanime.dto.AuthenticationResponseDto;
@@ -11,7 +13,11 @@ public interface UserCredentialService {
 
   AuthenticationResponseDto register(UserCredentialDto userCredentialDto);
 
+  AuthenticationResponseDto validate(HttpServletRequest request);
+
   void verify(String token);
 
-  AuthenticationResponseDto validate(HttpServletRequest request);
+  void forgotPassword(UserEmailDto userEmailDto);
+
+  void resetPassword(ResetPasswordDto resetPasswordDto);
 }

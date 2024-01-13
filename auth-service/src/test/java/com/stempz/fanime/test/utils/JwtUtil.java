@@ -1,4 +1,4 @@
-package com.stempz.fanime.utils;
+package com.stempz.fanime.test.utils;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

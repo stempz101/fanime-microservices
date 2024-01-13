@@ -1,4 +1,4 @@
-package com.stempz.fanime.utils;
+package com.stempz.fanime.test.utils;
 
 public class ErrorMessageTestUtil {
 

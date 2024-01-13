@@ -1,5 +1,7 @@
 package com.stempz.fanime.exception;
 
+import com.stempz.fanime.exception.enums.UserFieldType;
+
 public class UserAlreadyExistsException extends RuntimeException {
 
   private static final String MESSAGE = "User already exists";
@@ -9,11 +11,7 @@ public class UserAlreadyExistsException extends RuntimeException {
     super(MESSAGE);
   }
 
-  public UserAlreadyExistsException(String field, FieldType fieldType) {
+  public UserAlreadyExistsException(String field, UserFieldType fieldType) {
     super(String.format(FORMAT_MESSAGE, fieldType.name().toLowerCase(), field));
-  }
-
-  public enum FieldType {
-    EMAIL, USERNAME
   }
 }

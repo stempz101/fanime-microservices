@@ -1,6 +1,6 @@
 package com.stempz.fanime.config.kafka;
 
-import com.stempz.fanime.dto.EmailVerificationDto;
+import com.stempz.fanime.dto.EmailWithTokenDto;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -28,12 +28,12 @@ public class KafkaProducerConfig {
   }
 
   @Bean
-  public ProducerFactory<String, EmailVerificationDto> emailVerificationProducerFactory() {
+  public ProducerFactory<String, EmailWithTokenDto> emailWithTokenProducerFactory() {
     return new DefaultKafkaProducerFactory<>(producerConfig());
   }
 
   @Bean
-  public KafkaTemplate<String, EmailVerificationDto> emailVerificationKafkaTemplate() {
-    return new KafkaTemplate<>(emailVerificationProducerFactory());
+  public KafkaTemplate<String, EmailWithTokenDto> emailWithTokenKafkaTemplate() {
+    return new KafkaTemplate<>(emailWithTokenProducerFactory());
   }
 }

@@ -30,6 +30,22 @@ spring:
           filters:
             - PrefixPath=/api/v1
 
+        - id: auth-service-forgot-password
+          uri: lb://auth-service
+          predicates:
+            - Path=/auth/forgot-password
+            - Method=POST
+          filters:
+            - PrefixPath=/api/v1
+
+        - id: auth-service-reset-password
+          uri: lb://auth-service
+          predicates:
+            - Path=/auth/reset-password
+            - Method=POST
+          filters:
+            - PrefixPath=/api/v1
+
         - id: anime-service-anime-create
           uri: lb://anime-service
           predicates:

@@ -28,7 +28,9 @@ public class SecurityConfiguration {
                 "/api/v1/auth/register",
                 "/api/v1/auth/authenticate",
                 "/api/v1/auth/validate",
-                "/api/v1/auth/verify"
+                "/api/v1/auth/verify",
+                "/api/v1/auth/forgot-password",
+                "/api/v1/auth/reset-password"
             ).permitAll()
             .anyRequest().authenticated())
         .authenticationProvider(authenticationProvider)

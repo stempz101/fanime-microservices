@@ -9,6 +9,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -16,16 +17,23 @@ import static org.mockito.Mockito.when;
 
 import com.stempz.fanime.dto.AuthenticationRequestDto;
 import com.stempz.fanime.dto.AuthenticationResponseDto;
-import com.stempz.fanime.dto.EmailVerificationDto;
+import com.stempz.fanime.dto.EmailWithTokenDto;
+import com.stempz.fanime.dto.ResetPasswordDto;
 import com.stempz.fanime.dto.UserCredentialDto;
+import com.stempz.fanime.dto.UserEmailDto;
+import com.stempz.fanime.exception.PasswordResetTokenExpiredException;
+import com.stempz.fanime.exception.PasswordResetTokenNotFoundException;
 import com.stempz.fanime.exception.UserAlreadyVerifiedException;
 import com.stempz.fanime.exception.UserAlreadyExistsException;
 import com.stempz.fanime.exception.UserNotFoundException;
 import com.stempz.fanime.jwt.JwtService;
 import com.stempz.fanime.mapper.UserCredentialMapper;
+import com.stempz.fanime.model.PasswordResetToken;
 import com.stempz.fanime.model.UserCredential;
+import com.stempz.fanime.repository.PasswordResetTokenRepo;
 import com.stempz.fanime.repository.UserCredentialRepo;
-import com.stempz.fanime.utils.UserCredentialTestUtil;
+import com.stempz.fanime.test.utils.PasswordResetTokenTestUtil;
+import com.stempz.fanime.test.utils.UserCredentialTestUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -51,6 +59,9 @@ public class UserCredentialServiceImplTest {
   private UserCredentialRepo userCredentialRepo;
 
   @Mock
+  private PasswordResetTokenRepo passwordResetTokenRepo;
+
+  @Mock
   private UserCredentialMapper userCredentialMapper;
 
   @Mock
@@ -63,7 +74,7 @@ public class UserCredentialServiceImplTest {
   private PasswordEncoder passwordEncoder;
 
   @Mock
-  private KafkaTemplate<String, EmailVerificationDto> emailVerificationKafkaTemplate;
+  private KafkaTemplate<String, EmailWithTokenDto> emailWithTokenKafkaTemplate;
 
   @Test
   void authenticate_Success() {
@@ -141,7 +152,7 @@ public class UserCredentialServiceImplTest {
     verify(authenticationProvider, times(1)).authenticate(any());
     verify(authentication, times(1)).getPrincipal();
     verify(jwtService, times(1)).generateToken(any(), anyLong());
-    verify(emailVerificationKafkaTemplate, times(1)).send(any(), any());
+    verify(emailWithTokenKafkaTemplate, times(1)).send(any(), any());
     verify(userCredentialMapper, times(1)).mapToAuthenticationResponseDto(any(), anyString(),
         anyBoolean());
 
@@ -320,5 +331,123 @@ public class UserCredentialServiceImplTest {
     verify(authentication, times(1)).getPrincipal();
 
     assertThat(result, samePropertyValuesAs(expectedResult));
+  }
+
+  @Test
+  void forgotPassword_PasswordResetTokenDoesNotExist_Success() {
+    // Given
+    UserEmailDto userEmailDto = UserCredentialTestUtil.getUserEmailDto1();
+    UserCredential userCredential = UserCredentialTestUtil.getUserCredential1();
+    PasswordResetToken resetToken = PasswordResetTokenTestUtil.getPasswordResetToken1();
+
+    // When
+    when(userCredentialRepo.findByEmailIgnoreCase(any())).thenReturn(Optional.of(userCredential));
+    when(passwordResetTokenRepo.findByUserId(anyLong())).thenReturn(Optional.empty());
+    when(passwordResetTokenRepo.save(any())).thenReturn(resetToken);
+
+    userCredentialService.forgotPassword(userEmailDto);
+
+    // Then
+    verify(userCredentialRepo, times(1)).findByEmailIgnoreCase(any());
+    verify(passwordResetTokenRepo, times(1)).findByUserId(anyLong());
+    verify(passwordResetTokenRepo, times(1)).save(any());
+    verify(emailWithTokenKafkaTemplate, times(1)).send(any(), any());
+  }
+
+  @Test
+  void forgotPassword_PasswordResetTokenExists_Success() {
+    // Given
+    UserEmailDto userEmailDto = UserCredentialTestUtil.getUserEmailDto1();
+    UserCredential userCredential = UserCredentialTestUtil.getUserCredential1();
+    PasswordResetToken resetToken = PasswordResetTokenTestUtil.getPasswordResetToken1();
+
+    // When
+    when(userCredentialRepo.findByEmailIgnoreCase(any())).thenReturn(Optional.of(userCredential));
+    when(passwordResetTokenRepo.findByUserId(anyLong())).thenReturn(Optional.of(resetToken));
+    when(passwordResetTokenRepo.save(any())).thenReturn(resetToken);
+
+    userCredentialService.forgotPassword(userEmailDto);
+
+    // Then
+    verify(userCredentialRepo, times(1)).findByEmailIgnoreCase(any());
+    verify(passwordResetTokenRepo, times(1)).findByUserId(anyLong());
+    verify(passwordResetTokenRepo, times(1)).save(any());
+    verify(emailWithTokenKafkaTemplate, times(1)).send(any(), any());
+  }
+
+  @Test
+  void forgotPassword_UserNotFound_Failure() {
+    // Given
+    UserEmailDto userEmailDto = UserCredentialTestUtil.getUserEmailDto1();
+
+    // When
+    when(userCredentialRepo.findByEmailIgnoreCase(any())).thenReturn(Optional.empty());
+
+    // Then
+    assertThrows(UserNotFoundException.class,
+        () -> userCredentialService.forgotPassword(userEmailDto));
+  }
+
+  @Test
+  void resetPassword_Success() {
+    // Given
+    ResetPasswordDto resetPasswordDto = PasswordResetTokenTestUtil.getResetPasswordDto1();
+    PasswordResetToken resetToken = PasswordResetTokenTestUtil.getPasswordResetToken1();
+    UserCredential userCredential = UserCredentialTestUtil.getUserCredential1();
+
+    // When
+    when(passwordResetTokenRepo.findByToken(any())).thenReturn(Optional.of(resetToken));
+    when(userCredentialRepo.save(any())).thenReturn(userCredential);
+    doNothing().when(passwordResetTokenRepo).deleteByToken(any());
+
+    userCredentialService.resetPassword(resetPasswordDto);
+
+    // Then
+    verify(passwordResetTokenRepo, times(1)).findByToken(any());
+    verify(userCredentialRepo, times(1)).save(any());
+    verify(passwordResetTokenRepo, times(1)).deleteByToken(any());
+  }
+
+  @Test
+  void resetPassword_PasswordResetTokenNotFound_Failure() {
+    // Given
+    ResetPasswordDto resetPasswordDto = PasswordResetTokenTestUtil.getResetPasswordDto1();
+
+    // When
+    when(passwordResetTokenRepo.findByToken(any())).thenReturn(Optional.empty());
+
+    // Then
+    assertThrows(PasswordResetTokenNotFoundException.class,
+        () -> userCredentialService.resetPassword(resetPasswordDto));
+  }
+
+  @Test
+  void resetPassword_PasswordResetTokenExpired_Failure() {
+    // Given
+    ResetPasswordDto resetPasswordDto = PasswordResetTokenTestUtil.getResetPasswordDto1();
+    PasswordResetToken resetToken = PasswordResetTokenTestUtil.getPasswordResetToken1();
+    resetToken.setExpirationTime(resetToken.getExpirationTime().minusDays(10));
+
+    // When
+    when(passwordResetTokenRepo.findByToken(any())).thenReturn(Optional.of(resetToken));
+
+    // Then
+    assertThrows(PasswordResetTokenExpiredException.class,
+        () -> userCredentialService.resetPassword(resetPasswordDto));
+  }
+
+  @Test
+  void resetPassword_PasswordResetTokenExpired_EdgeCase_Failure() {
+    // Given
+    ResetPasswordDto resetPasswordDto = PasswordResetTokenTestUtil.getResetPasswordDto1();
+    PasswordResetToken resetToken = PasswordResetTokenTestUtil.getPasswordResetToken1();
+    resetToken.setExpirationTime(resetToken.getExpirationTime().minusDays(1));
+
+    // When
+    when(passwordResetTokenRepo.findByToken(any())).thenReturn(Optional.of(resetToken));
+
+    // Then
+    assertThrows(PasswordResetTokenExpiredException.class,
+        () -> userCredentialService.resetPassword(resetPasswordDto));
   }
 }

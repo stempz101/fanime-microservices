@@ -1,6 +1,6 @@
 package com.stempz.fanime.config.kafka;
 
-import com.stempz.fanime.dto.EmailVerificationDto;
+import com.stempz.fanime.dto.EmailWithTokenDto;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -31,15 +31,15 @@ public class KafkaConsumerConfig {
   }
 
   @Bean
-  public ConsumerFactory<String, EmailVerificationDto> emailVerificationConsumerFactory() {
+  public ConsumerFactory<String, EmailWithTokenDto> emailWithTokenConsumerFactory() {
     return new DefaultKafkaConsumerFactory<>(consumerConfig());
   }
 
   @Bean
-  public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, EmailVerificationDto>> emailVerificationContainerFactory() {
-    ConcurrentKafkaListenerContainerFactory<String, EmailVerificationDto> factory =
+  public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, EmailWithTokenDto>> emailWithTokenContainerFactory() {
+    ConcurrentKafkaListenerContainerFactory<String, EmailWithTokenDto> factory =
         new ConcurrentKafkaListenerContainerFactory<>();
-    factory.setConsumerFactory(emailVerificationConsumerFactory());
+    factory.setConsumerFactory(emailWithTokenConsumerFactory());
     return factory;
   }
 }

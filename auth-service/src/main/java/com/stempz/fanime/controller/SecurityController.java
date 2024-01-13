@@ -1,5 +1,7 @@
 package com.stempz.fanime.controller;
 
+import com.stempz.fanime.dto.ResetPasswordDto;
+import com.stempz.fanime.dto.UserEmailDto;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,13 +34,23 @@ public class SecurityController {
     return userCredentialService.register(userCredentialDto);
   }
 
+  @GetMapping("/validate")
+  public AuthenticationResponseDto validateToken(HttpServletRequest request) {
+    return userCredentialService.validate(request);
+  }
+
   @GetMapping("/verify")
   public void verify(@RequestParam String token) {
     userCredentialService.verify(token);
   }
 
-  @GetMapping("/validate")
-  public AuthenticationResponseDto validateToken(HttpServletRequest request) {
-    return userCredentialService.validate(request);
+  @PostMapping("/forgot-password")
+  public void forgotPassword(@RequestBody @Valid UserEmailDto userEmailDto) {
+    userCredentialService.forgotPassword(userEmailDto);
+  }
+
+  @PostMapping("/reset-password")
+  public void resetPassword(@RequestBody @Valid ResetPasswordDto resetPasswordDto) {
+    userCredentialService.resetPassword(resetPasswordDto);
   }
 }

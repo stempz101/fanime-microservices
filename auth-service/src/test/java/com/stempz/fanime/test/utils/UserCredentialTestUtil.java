@@ -1,5 +1,6 @@
-package com.stempz.fanime.utils;
+package com.stempz.fanime.test.utils;
 
+import com.stempz.fanime.dto.UserEmailDto;
 import java.util.Map;
 import com.stempz.fanime.dto.AuthenticationRequestDto;
 import com.stempz.fanime.dto.AuthenticationResponseDto;
@@ -93,5 +94,9 @@ public class UserCredentialTestUtil {
   public static AuthenticationResponseDto getAuthenticationResponseDto1() {
     return new AuthenticationResponseDto(true, TEST_USER_ID_1, TEST_USER_EMAIL_1,
         TEST_USER_USERNAME_1, TEST_USER_JWT_1, TEST_USER_ROLE_1, TEST_USER_VERIFIED_1);
+  }
+
+  public static UserEmailDto getUserEmailDto1() {
+    return new UserEmailDto(TEST_USER_EMAIL_1);
   }
 }

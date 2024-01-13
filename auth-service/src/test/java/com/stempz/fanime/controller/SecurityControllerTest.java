@@ -1,25 +1,27 @@
 package com.stempz.fanime.controller;
 
-import static com.stempz.fanime.utils.ErrorMessageTestUtil.BAD_CREDENTIALS;
-import static com.stempz.fanime.utils.ErrorMessageTestUtil.EMAIL_NOT_BLANK;
-import static com.stempz.fanime.utils.ErrorMessageTestUtil.EMAIL_WELL_FORMED;
-import static com.stempz.fanime.utils.ErrorMessageTestUtil.PASSWORD_INVALID;
-import static com.stempz.fanime.utils.ErrorMessageTestUtil.PASSWORD_NOT_EMPTY;
-import static com.stempz.fanime.utils.ErrorMessageTestUtil.USERNAME_NOT_BLANK;
-import static com.stempz.fanime.utils.ErrorMessageTestUtil.USER_EXISTS_FORMAT;
-import static com.stempz.fanime.utils.UserCredentialTestUtil.TEST_USER_EMAIL_1;
-import static com.stempz.fanime.utils.UserCredentialTestUtil.TEST_USER_ID_1;
-import static com.stempz.fanime.utils.UserCredentialTestUtil.TEST_USER_JWT_1;
-import static com.stempz.fanime.utils.UserCredentialTestUtil.TEST_USER_PASSWORD_1;
-import static com.stempz.fanime.utils.UserCredentialTestUtil.TEST_USER_ROLE_1;
-import static com.stempz.fanime.utils.UserCredentialTestUtil.TEST_USER_USERNAME_1;
-import static com.stempz.fanime.utils.UserCredentialTestUtil.getAuthenticationRequestDto1;
-import static com.stempz.fanime.utils.UserCredentialTestUtil.getAuthenticationRequestDto2;
-import static com.stempz.fanime.utils.UserCredentialTestUtil.getAuthenticationResponseDto1;
-import static com.stempz.fanime.utils.UserCredentialTestUtil.getUserCredential1;
-import static com.stempz.fanime.utils.UserCredentialTestUtil.getUserCredential2;
-import static com.stempz.fanime.utils.UserCredentialTestUtil.getUserCredentialDto1;
-import static com.stempz.fanime.utils.UserCredentialTestUtil.getUserCredentialDto2;
+import static com.stempz.fanime.test.utils.ErrorMessageTestUtil.BAD_CREDENTIALS;
+import static com.stempz.fanime.test.utils.ErrorMessageTestUtil.EMAIL_NOT_BLANK;
+import static com.stempz.fanime.test.utils.ErrorMessageTestUtil.EMAIL_WELL_FORMED;
+import static com.stempz.fanime.test.utils.ErrorMessageTestUtil.PASSWORD_INVALID;
+import static com.stempz.fanime.test.utils.ErrorMessageTestUtil.PASSWORD_NOT_EMPTY;
+import static com.stempz.fanime.test.utils.ErrorMessageTestUtil.USERNAME_NOT_BLANK;
+import static com.stempz.fanime.test.utils.ErrorMessageTestUtil.USER_EXISTS_FORMAT;
+import static com.stempz.fanime.test.utils.PasswordResetTokenTestUtil.TEST_PRT_TOKEN_1;
+import static com.stempz.fanime.test.utils.UserCredentialTestUtil.TEST_USER_EMAIL_1;
+import static com.stempz.fanime.test.utils.UserCredentialTestUtil.TEST_USER_ID_1;
+import static com.stempz.fanime.test.utils.UserCredentialTestUtil.TEST_USER_JWT_1;
+import static com.stempz.fanime.test.utils.UserCredentialTestUtil.TEST_USER_PASSWORD_1;
+import static com.stempz.fanime.test.utils.UserCredentialTestUtil.TEST_USER_ROLE_1;
+import static com.stempz.fanime.test.utils.UserCredentialTestUtil.TEST_USER_USERNAME_1;
+import static com.stempz.fanime.test.utils.UserCredentialTestUtil.getAuthenticationRequestDto1;
+import static com.stempz.fanime.test.utils.UserCredentialTestUtil.getAuthenticationRequestDto2;
+import static com.stempz.fanime.test.utils.UserCredentialTestUtil.getAuthenticationResponseDto1;
+import static com.stempz.fanime.test.utils.UserCredentialTestUtil.getUserCredential1;
+import static com.stempz.fanime.test.utils.UserCredentialTestUtil.getUserCredential2;
+import static com.stempz.fanime.test.utils.UserCredentialTestUtil.getUserCredentialDto1;
+import static com.stempz.fanime.test.utils.UserCredentialTestUtil.getUserCredentialDto2;
+import static com.stempz.fanime.test.utils.UserCredentialTestUtil.getUserEmailDto1;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
@@ -38,15 +40,21 @@ import com.stempz.fanime.config.security.SecurityBeansConfiguration;
 import com.stempz.fanime.config.security.SecurityConfiguration;
 import com.stempz.fanime.dto.AuthenticationRequestDto;
 import com.stempz.fanime.dto.AuthenticationResponseDto;
+import com.stempz.fanime.dto.ResetPasswordDto;
 import com.stempz.fanime.dto.UserCredentialDto;
+import com.stempz.fanime.dto.UserEmailDto;
+import com.stempz.fanime.exception.PasswordResetTokenExpiredException;
+import com.stempz.fanime.exception.PasswordResetTokenNotFoundException;
 import com.stempz.fanime.exception.UserAlreadyExistsException;
-import com.stempz.fanime.exception.UserAlreadyExistsException.FieldType;
 import com.stempz.fanime.exception.UserAlreadyVerifiedException;
 import com.stempz.fanime.exception.UserNotFoundException;
+import com.stempz.fanime.exception.enums.UserFieldType;
 import com.stempz.fanime.jwt.JwtService;
 import com.stempz.fanime.model.UserCredential;
 import com.stempz.fanime.repository.UserCredentialRepo;
 import com.stempz.fanime.service.UserCredentialService;
+import com.stempz.fanime.test.utils.PasswordResetTokenTestUtil;
+import com.stempz.fanime.test.utils.UserCredentialTestUtil;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -310,11 +318,11 @@ public class SecurityControllerTest {
     // Given
     UserCredentialDto userCredentialDto = getUserCredentialDto2();
     String expectedErrorMessage = String.format(USER_EXISTS_FORMAT,
-        FieldType.EMAIL.name().toLowerCase(), userCredentialDto.email());
+        UserFieldType.EMAIL.name().toLowerCase(), userCredentialDto.email());
 
     // When
     when(userCredentialService.register(any())).thenThrow(
-        new UserAlreadyExistsException(userCredentialDto.email(), FieldType.EMAIL));
+        new UserAlreadyExistsException(userCredentialDto.email(), UserFieldType.EMAIL));
 
     ResultActions result = mockMvc.perform(post("/api/v1/auth/register")
         .contentType(MediaType.APPLICATION_JSON)
@@ -336,11 +344,11 @@ public class SecurityControllerTest {
     // Given
     UserCredentialDto userCredentialDto = getUserCredentialDto2();
     String expectedErrorMessage = String.format(USER_EXISTS_FORMAT,
-        FieldType.USERNAME.name().toLowerCase(), userCredentialDto.username());
+        UserFieldType.USERNAME.name().toLowerCase(), userCredentialDto.username());
 
     // When
     when(userCredentialService.register(any())).thenThrow(
-        new UserAlreadyExistsException(userCredentialDto.username(), FieldType.USERNAME));
+        new UserAlreadyExistsException(userCredentialDto.username(), UserFieldType.USERNAME));
 
     ResultActions result = mockMvc.perform(post("/api/v1/auth/register")
         .contentType(MediaType.APPLICATION_JSON)
@@ -398,7 +406,7 @@ public class SecurityControllerTest {
     UserCredential userCredential = getUserCredential2();
 
     // When
-    doThrow(new UserNotFoundException(userCredential.getVerificationToken().toString()))
+    doThrow(new UserNotFoundException(userCredential.getVerificationToken().toString(), UserFieldType.TOKEN))
         .when(userCredentialService).verify(userCredential.getVerificationToken().toString());
 
     ResultActions result = mockMvc.perform(get("/api/v1/auth/verify")
@@ -496,6 +504,272 @@ public class SecurityControllerTest {
             jsonPath("$.username").doesNotExist(),
             jsonPath("$.jwt").doesNotExist(),
             jsonPath("$.role").doesNotExist()
+        );
+  }
+
+  @Test
+  void forgotPassword_Success() throws Exception {
+    // Given
+    UserEmailDto userEmailDto = getUserEmailDto1();
+
+    // When
+    doNothing().when(userCredentialService).forgotPassword(any());
+
+    ResultActions result = mockMvc.perform(post("/api/v1/auth/forgot-password")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(userEmailDto)));
+
+    // Then
+    result
+        .andDo(print())
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  void forgotPassword_EmailIsBlank_Failure() throws Exception {
+    // Given
+    UserEmailDto userEmailDto = new UserEmailDto("");
+
+    // When
+    ResultActions result = mockMvc.perform(post("/api/v1/auth/forgot-password")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(userEmailDto)));
+
+    // Then
+    result
+        .andDo(print())
+        .andExpectAll(
+            status().isBadRequest(),
+            content().contentType(MediaType.APPLICATION_JSON),
+            jsonPath("$").value(hasSize(1)),
+            jsonPath("$[0].message").value("Email must not be empty")
+        );
+  }
+
+  @Test
+  void forgotPassword_InvalidEmail_Failure() throws Exception {
+    // Given
+    UserEmailDto userEmailDto = new UserEmailDto("testgmail.com");
+
+    // When
+    ResultActions result = mockMvc.perform(post("/api/v1/auth/forgot-password")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(userEmailDto)));
+
+    // Then
+    result
+        .andDo(print())
+        .andExpectAll(
+            status().isBadRequest(),
+            content().contentType(MediaType.APPLICATION_JSON),
+            jsonPath("$").value(hasSize(1)),
+            jsonPath("$[0].message")
+                .value("Email address must be well-formed")
+        );
+  }
+
+  @Test
+  void forgotPassword_UserNotFound_Failure() throws Exception {
+    // Given
+    UserEmailDto userEmailDto = getUserEmailDto1();
+
+    // When
+    doThrow(new UserNotFoundException(userEmailDto.email(), UserFieldType.EMAIL))
+        .when(userCredentialService).forgotPassword(any());
+
+    ResultActions result = mockMvc.perform(post("/api/v1/auth/forgot-password")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(userEmailDto)));
+
+    // Then
+    result
+        .andDo(print())
+        .andExpectAll(
+            status().isNotFound(),
+            content().contentType(MediaType.APPLICATION_JSON),
+            jsonPath("$").value(hasSize(1)),
+            jsonPath("$[0].message")
+                .value(String.format("User is not found by %s: %s",
+                    UserFieldType.EMAIL.name().toLowerCase(), userEmailDto.email()))
+        );
+  }
+
+  @Test
+  void resetPassword_Success() throws Exception {
+    // Given
+    ResetPasswordDto resetPasswordDto = PasswordResetTokenTestUtil.getResetPasswordDto1();
+
+    // When
+    doNothing().when(userCredentialService).resetPassword(any());
+
+    ResultActions result = mockMvc.perform(post("/api/v1/auth/reset-password")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(resetPasswordDto)));
+
+    // Then
+    result
+        .andDo(print())
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  void resetPassword_PasswordIsNull_Failure() throws Exception {
+    // Given
+    ResetPasswordDto resetPasswordDto =
+        new ResetPasswordDto(null, TEST_PRT_TOKEN_1.toString());
+
+    // When
+    ResultActions result = mockMvc.perform(post("/api/v1/auth/reset-password")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(resetPasswordDto)));
+
+    // Then
+    result
+        .andDo(print())
+        .andExpectAll(
+            status().isBadRequest(),
+            content().contentType(MediaType.APPLICATION_JSON),
+            jsonPath("$").value(hasSize(1)),
+            jsonPath("$[0].message").value("Password must not be empty")
+        );
+  }
+
+  @Test
+  void resetPassword_PasswordIsEmpty_Failure() throws Exception {
+    // Given
+    ResetPasswordDto resetPasswordDto =
+        new ResetPasswordDto("".toCharArray(), TEST_PRT_TOKEN_1.toString());
+
+    // When
+    ResultActions result = mockMvc.perform(post("/api/v1/auth/reset-password")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(resetPasswordDto)));
+
+    // Then
+    result
+        .andDo(print())
+        .andExpectAll(
+            status().isBadRequest(),
+            content().contentType(MediaType.APPLICATION_JSON),
+            jsonPath("$").value(hasSize(1)),
+            jsonPath("$[0].message").value("Password must not be empty")
+        );
+  }
+
+  @Test
+  void resetPassword_PasswordIsLessThan8Symbols_Failure() throws Exception {
+    // Given
+    ResetPasswordDto resetPasswordDto =
+        new ResetPasswordDto("test123".toCharArray(), TEST_PRT_TOKEN_1.toString());
+
+    // When
+    ResultActions result = mockMvc.perform(post("/api/v1/auth/reset-password")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(resetPasswordDto)));
+
+    // Then
+    result
+        .andDo(print())
+        .andExpectAll(
+            status().isBadRequest(),
+            content().contentType(MediaType.APPLICATION_JSON),
+            jsonPath("$").value(hasSize(1)),
+            jsonPath("$[0].message")
+                .value("Password must contain 8 or more symbols, at least one letter and one digit")
+        );
+  }
+
+  @Test
+  void resetPassword_PasswordWithoutLetters_Failure() throws Exception {
+    // Given
+    ResetPasswordDto resetPasswordDto =
+        new ResetPasswordDto("876234523".toCharArray(), TEST_PRT_TOKEN_1.toString());
+
+    // When
+    ResultActions result = mockMvc.perform(post("/api/v1/auth/reset-password")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(resetPasswordDto)));
+
+    // Then
+    result
+        .andDo(print())
+        .andExpectAll(
+            status().isBadRequest(),
+            content().contentType(MediaType.APPLICATION_JSON),
+            jsonPath("$").value(hasSize(1)),
+            jsonPath("$[0].message")
+                .value("Password must contain 8 or more symbols, at least one letter and one digit")
+        );
+  }
+
+  @Test
+  void resetPassword_PasswordWithoutDigits_Failure() throws Exception {
+    // Given
+    ResetPasswordDto resetPasswordDto =
+        new ResetPasswordDto("iuyasdhdjd".toCharArray(), TEST_PRT_TOKEN_1.toString());
+
+    // When
+    ResultActions result = mockMvc.perform(post("/api/v1/auth/reset-password")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(resetPasswordDto)));
+
+    // Then
+    result
+        .andDo(print())
+        .andExpectAll(
+            status().isBadRequest(),
+            content().contentType(MediaType.APPLICATION_JSON),
+            jsonPath("$").value(hasSize(1)),
+            jsonPath("$[0].message")
+                .value("Password must contain 8 or more symbols, at least one letter and one digit")
+        );
+  }
+
+  @Test
+  void resetPassword_PasswordResetTokenNotFound_Failure() throws Exception {
+    // Given
+    ResetPasswordDto resetPasswordDto = PasswordResetTokenTestUtil.getResetPasswordDto1();;
+
+    // When
+    doThrow(new PasswordResetTokenNotFoundException())
+        .when(userCredentialService).resetPassword(any());
+
+    ResultActions result = mockMvc.perform(post("/api/v1/auth/reset-password")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(resetPasswordDto)));
+
+    // Then
+    result
+        .andDo(print())
+        .andExpectAll(
+            status().isNotFound(),
+            content().contentType(MediaType.APPLICATION_JSON),
+            jsonPath("$").value(hasSize(1)),
+            jsonPath("$[0].message").value("Password reset token is not found")
+        );
+  }
+
+  @Test
+  void resetPassword_PasswordResetTokenExpired_Failure() throws Exception {
+    // Given
+    ResetPasswordDto resetPasswordDto = PasswordResetTokenTestUtil.getResetPasswordDto1();;
+
+    // When
+    doThrow(new PasswordResetTokenExpiredException())
+        .when(userCredentialService).resetPassword(any());
+
+    ResultActions result = mockMvc.perform(post("/api/v1/auth/reset-password")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(resetPasswordDto)));
+
+    // Then
+    result
+        .andDo(print())
+        .andExpectAll(
+            status().isBadRequest(),
+            content().contentType(MediaType.APPLICATION_JSON),
+            jsonPath("$").value(hasSize(1)),
+            jsonPath("$[0].message").value("Password reset token is already expired")
         );
   }
 }

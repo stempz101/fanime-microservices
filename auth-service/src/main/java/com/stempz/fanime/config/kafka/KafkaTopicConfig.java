@@ -12,4 +12,9 @@ public class KafkaTopicConfig {
   public NewTopic emailVerificationTopic() {
     return TopicBuilder.name("email-verification-topic").build();
   }
+
+  @Bean
+  public NewTopic forgotPasswordTopic() {
+    return TopicBuilder.name("forgot-password-topic").build();
+  }
 }
