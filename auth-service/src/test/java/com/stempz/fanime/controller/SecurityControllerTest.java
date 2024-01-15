@@ -43,6 +43,7 @@ import com.stempz.fanime.dto.AuthenticationResponseDto;
 import com.stempz.fanime.dto.ResetPasswordDto;
 import com.stempz.fanime.dto.UserCredentialDto;
 import com.stempz.fanime.dto.UserEmailDto;
+import com.stempz.fanime.exception.PasswordAlreadyUsedException;
 import com.stempz.fanime.exception.PasswordResetTokenExpiredException;
 import com.stempz.fanime.exception.PasswordResetTokenNotFoundException;
 import com.stempz.fanime.exception.UserAlreadyExistsException;
@@ -770,6 +771,31 @@ public class SecurityControllerTest {
             content().contentType(MediaType.APPLICATION_JSON),
             jsonPath("$").value(hasSize(1)),
             jsonPath("$[0].message").value("Password reset token is already expired")
+        );
+  }
+
+  @Test
+  void resetPassword_PasswordAlreadyUsed_Failure() throws Exception {
+    // Given
+    ResetPasswordDto resetPasswordDto = PasswordResetTokenTestUtil.getResetPasswordDto1();;
+
+    // When
+    doThrow(new PasswordAlreadyUsedException())
+        .when(userCredentialService).resetPassword(any());
+
+    ResultActions result = mockMvc.perform(post("/api/v1/auth/reset-password")
+        .contentType(MediaType.APPLICATION_JSON)
+        .content(objectMapper.writeValueAsString(resetPasswordDto)));
+
+    // Then
+    result
+        .andDo(print())
+        .andExpectAll(
+            status().isBadRequest(),
+            content().contentType(MediaType.APPLICATION_JSON),
+            jsonPath("$").value(hasSize(1)),
+            jsonPath("$[0].message")
+                .value("Entered new password was previously used or is already in use. Please choose a different password")
         );
   }
 }

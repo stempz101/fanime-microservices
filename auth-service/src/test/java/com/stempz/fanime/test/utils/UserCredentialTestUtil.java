@@ -14,7 +14,8 @@ public class UserCredentialTestUtil {
   public static final long TEST_USER_ID_1 = 1;
   public static final String TEST_USER_EMAIL_1 = "test1@gmail.com";
   public static final String TEST_USER_USERNAME_1 = "testuser1";
-  public static final String TEST_USER_PASSWORD_1 = "qwerty123";
+  public static final String TEST_USER_PASSWORD_1 = "$2a$10$OJx9DW76J/tXLehRKHiwYu6KHmQEmBRu82yiaku574/QD.Ip4N1ZC";
+  public static final String TEST_USER_PASSWORD_DECRYPTED_1 = "qwerty123";
   public static final UUID TEST_USER_VERIFICATION_TOKEN_1 = UUID.randomUUID();
   public static final boolean TEST_USER_VERIFIED_1 = true;
   public static final Role TEST_USER_ROLE_1 = Role.USER;
@@ -27,7 +28,7 @@ public class UserCredentialTestUtil {
   public static final long TEST_USER_ID_2 = 2;
   public static final String TEST_USER_EMAIL_2 = "test2@gmail.com";
   public static final String TEST_USER_USERNAME_2 = "testuser2";
-  public static final String TEST_USER_PASSWORD_2 = "qwerty321";
+  public static final String TEST_USER_PASSWORD_2 = "$2a$10$THCb9Y3vQjL5V7qxWAxbxeIzt9HwKEik0wnxkHSVcO1EBrqpF7Nqm";
   public static final UUID TEST_USER_VERIFICATION_TOKEN_2 = UUID.randomUUID();
   public static final boolean TEST_USER_VERIFIED_2 = false;
 

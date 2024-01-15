@@ -1,5 +1,6 @@
 package com.stempz.fanime.controller.error;
 
+import com.stempz.fanime.exception.PasswordAlreadyUsedException;
 import com.stempz.fanime.exception.PasswordResetTokenExpiredException;
 import com.stempz.fanime.exception.PasswordResetTokenNotFoundException;
 import com.stempz.fanime.exception.UserAlreadyVerifiedException;
@@ -39,6 +40,7 @@ public class ExceptionHandlerController {
   @ExceptionHandler({
       UserAlreadyExistsException.class,
       UserAlreadyVerifiedException.class,
+      PasswordAlreadyUsedException.class,
       PasswordResetTokenExpiredException.class
   })
   @ResponseStatus(HttpStatus.BAD_REQUEST)

@@ -6,6 +6,7 @@ import com.stempz.fanime.dto.EmailWithTokenDto;
 import com.stempz.fanime.dto.ResetPasswordDto;
 import com.stempz.fanime.dto.UserCredentialDto;
 import com.stempz.fanime.dto.UserEmailDto;
+import com.stempz.fanime.exception.PasswordAlreadyUsedException;
 import com.stempz.fanime.exception.PasswordResetTokenExpiredException;
 import com.stempz.fanime.exception.PasswordResetTokenNotFoundException;
 import com.stempz.fanime.exception.UserAlreadyVerifiedException;
@@ -14,17 +15,21 @@ import com.stempz.fanime.exception.UserNotFoundException;
 import com.stempz.fanime.exception.enums.UserFieldType;
 import com.stempz.fanime.jwt.JwtService;
 import com.stempz.fanime.mapper.UserCredentialMapper;
+import com.stempz.fanime.model.PasswordRecord;
 import com.stempz.fanime.model.PasswordResetToken;
 import com.stempz.fanime.model.UserCredential;
 import com.stempz.fanime.model.enums.Role;
+import com.stempz.fanime.repository.PasswordRecordRepo;
 import com.stempz.fanime.repository.PasswordResetTokenRepo;
 import com.stempz.fanime.repository.UserCredentialRepo;
 import com.stempz.fanime.service.UserCredentialService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -43,6 +48,7 @@ public class UserCredentialServiceImpl implements UserCredentialService {
 
   private final UserCredentialRepo userCredentialRepo;
   private final PasswordResetTokenRepo passwordResetTokenRepo;
+  private final PasswordRecordRepo passwordRecordRepo;
 
   private final UserCredentialMapper userCredentialMapper;
 
@@ -173,9 +179,17 @@ public class UserCredentialServiceImpl implements UserCredentialService {
 
     if (LocalDateTime.now().isAfter(passwordResetToken.getExpirationTime())) {
       throw new PasswordResetTokenExpiredException();
+    } else if (isPasswordPreviouslyUsed(passwordResetToken.getUser(), resetPasswordDto.password())) {
+      throw new PasswordAlreadyUsedException();
     }
 
     UserCredential userCredential = passwordResetToken.getUser();
+
+    passwordRecordRepo.save(PasswordRecord.builder()
+        .password(userCredential.getPassword())
+        .user(userCredential)
+        .build());
+
     userCredential.setPassword(encodePassword(resetPasswordDto.password()));
     userCredentialRepo.save(userCredential);
 
@@ -186,5 +200,14 @@ public class UserCredentialServiceImpl implements UserCredentialService {
 
   private String encodePassword(char[] password) {
     return passwordEncoder.encode(String.valueOf(password));
+  }
+
+  private boolean isPasswordPreviouslyUsed(UserCredential user, char[] newPassword) {
+    String newPasswordStr = String.valueOf(newPassword);
+
+    return passwordEncoder.matches(newPasswordStr, user.getPassword()) ||
+        passwordRecordRepo.findAllByUser_Id(user.getId()).stream()
+            .anyMatch(passwordRecord ->
+                passwordEncoder.matches(newPasswordStr, passwordRecord.getPassword()));
   }
 }

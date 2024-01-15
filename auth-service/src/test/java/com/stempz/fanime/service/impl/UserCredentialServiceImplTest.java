@@ -10,6 +10,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -21,20 +22,25 @@ import com.stempz.fanime.dto.EmailWithTokenDto;
 import com.stempz.fanime.dto.ResetPasswordDto;
 import com.stempz.fanime.dto.UserCredentialDto;
 import com.stempz.fanime.dto.UserEmailDto;
+import com.stempz.fanime.exception.PasswordAlreadyUsedException;
 import com.stempz.fanime.exception.PasswordResetTokenExpiredException;
 import com.stempz.fanime.exception.PasswordResetTokenNotFoundException;
-import com.stempz.fanime.exception.UserAlreadyVerifiedException;
 import com.stempz.fanime.exception.UserAlreadyExistsException;
+import com.stempz.fanime.exception.UserAlreadyVerifiedException;
 import com.stempz.fanime.exception.UserNotFoundException;
 import com.stempz.fanime.jwt.JwtService;
 import com.stempz.fanime.mapper.UserCredentialMapper;
+import com.stempz.fanime.model.PasswordRecord;
 import com.stempz.fanime.model.PasswordResetToken;
 import com.stempz.fanime.model.UserCredential;
+import com.stempz.fanime.repository.PasswordRecordRepo;
 import com.stempz.fanime.repository.PasswordResetTokenRepo;
 import com.stempz.fanime.repository.UserCredentialRepo;
+import com.stempz.fanime.test.utils.PasswordRecordTestUtil;
 import com.stempz.fanime.test.utils.PasswordResetTokenTestUtil;
 import com.stempz.fanime.test.utils.UserCredentialTestUtil;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -60,6 +66,9 @@ public class UserCredentialServiceImplTest {
 
   @Mock
   private PasswordResetTokenRepo passwordResetTokenRepo;
+
+  @Mock
+  private PasswordRecordRepo passwordRecordRepo;
 
   @Mock
   private UserCredentialMapper userCredentialMapper;
@@ -393,10 +402,15 @@ public class UserCredentialServiceImplTest {
     // Given
     ResetPasswordDto resetPasswordDto = PasswordResetTokenTestUtil.getResetPasswordDto1();
     PasswordResetToken resetToken = PasswordResetTokenTestUtil.getPasswordResetToken1();
+    List<PasswordRecord> passwordRecordList = PasswordRecordTestUtil.getPasswordRecordList();
+    PasswordRecord passwordRecord = PasswordRecordTestUtil.getPasswordRecord3();
     UserCredential userCredential = UserCredentialTestUtil.getUserCredential1();
 
     // When
     when(passwordResetTokenRepo.findByToken(any())).thenReturn(Optional.of(resetToken));
+    when(passwordRecordRepo.findAllByUser_Id(anyLong())).thenReturn(passwordRecordList);
+    when(passwordRecordRepo.save(any())).thenReturn(passwordRecord);
+    when(passwordEncoder.encode(any())).thenReturn("encodedPassword");
     when(userCredentialRepo.save(any())).thenReturn(userCredential);
     doNothing().when(passwordResetTokenRepo).deleteByToken(any());
 
@@ -404,6 +418,10 @@ public class UserCredentialServiceImplTest {
 
     // Then
     verify(passwordResetTokenRepo, times(1)).findByToken(any());
+    verify(passwordEncoder, times(3)).matches(any(), any());
+    verify(passwordRecordRepo, times(1)).findAllByUser_Id(anyLong());
+    verify(passwordRecordRepo, times(1)).save(any());
+    verify(passwordEncoder, times(1)).encode(any());
     verify(userCredentialRepo, times(1)).save(any());
     verify(passwordResetTokenRepo, times(1)).deleteByToken(any());
   }
@@ -448,6 +466,41 @@ public class UserCredentialServiceImplTest {
 
     // Then
     assertThrows(PasswordResetTokenExpiredException.class,
+        () -> userCredentialService.resetPassword(resetPasswordDto));
+  }
+
+  @Test
+  void resetPassword_NewPasswordIsCurrentPassword_Failure() {
+    // Given
+    PasswordResetToken resetToken = PasswordResetTokenTestUtil.getPasswordResetToken1();
+    ResetPasswordDto resetPasswordDto =
+        new ResetPasswordDto(resetToken.getUser().getPassword().toCharArray(),
+            PasswordResetTokenTestUtil.TEST_PRT_TOKEN_1.toString());
+
+    // When
+    when(passwordResetTokenRepo.findByToken(any())).thenReturn(Optional.of(resetToken));
+    when(passwordEncoder.matches(any(), any())).thenReturn(true);
+
+    // Then
+    assertThrows(PasswordAlreadyUsedException.class,
+        () -> userCredentialService.resetPassword(resetPasswordDto));
+  }
+
+  @Test
+  void resetPassword_NewPasswordWasUsed_Failure() {
+    // Given
+    PasswordResetToken resetToken = PasswordResetTokenTestUtil.getPasswordResetToken1();
+    ResetPasswordDto resetPasswordDto =
+        new ResetPasswordDto(resetToken.getUser().getPassword().toCharArray(),
+            PasswordResetTokenTestUtil.TEST_PRT_TOKEN_1.toString());
+
+    // When
+    when(passwordResetTokenRepo.findByToken(any())).thenReturn(Optional.of(resetToken));
+    when(passwordEncoder.matches(any(), any())).thenReturn(false);
+    lenient().when(passwordEncoder.matches(any(), any())).thenReturn(true);
+
+    // Then
+    assertThrows(PasswordAlreadyUsedException.class,
         () -> userCredentialService.resetPassword(resetPasswordDto));
   }
 }

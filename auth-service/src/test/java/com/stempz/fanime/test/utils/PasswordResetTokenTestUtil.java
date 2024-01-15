@@ -23,7 +23,7 @@ public class PasswordResetTokenTestUtil {
   }
 
   public static ResetPasswordDto getResetPasswordDto1() {
-    return new ResetPasswordDto(UserCredentialTestUtil.TEST_USER_PASSWORD_1.toCharArray(),
+    return new ResetPasswordDto(UserCredentialTestUtil.TEST_USER_PASSWORD_DECRYPTED_1.toCharArray(),
         TEST_PRT_TOKEN_1.toString());
   }
 }
