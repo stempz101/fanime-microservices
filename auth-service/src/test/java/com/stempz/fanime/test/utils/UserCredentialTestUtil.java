@@ -29,6 +29,7 @@ public class UserCredentialTestUtil {
   public static final String TEST_USER_EMAIL_2 = "test2@gmail.com";
   public static final String TEST_USER_USERNAME_2 = "testuser2";
   public static final String TEST_USER_PASSWORD_2 = "$2a$10$THCb9Y3vQjL5V7qxWAxbxeIzt9HwKEik0wnxkHSVcO1EBrqpF7Nqm";
+  public static final String TEST_USER_PASSWORD_DECRYPTED_2 = "qwerty321";
   public static final UUID TEST_USER_VERIFICATION_TOKEN_2 = UUID.randomUUID();
   public static final boolean TEST_USER_VERIFIED_2 = false;
 
@@ -76,20 +77,20 @@ public class UserCredentialTestUtil {
 
   public static UserCredentialDto getUserCredentialDto1() {
     return new UserCredentialDto(TEST_USER_EMAIL_1, TEST_USER_USERNAME_1,
-        TEST_USER_PASSWORD_1.toCharArray());
+        TEST_USER_PASSWORD_DECRYPTED_1.toCharArray());
   }
 
   public static UserCredentialDto getUserCredentialDto2() {
     return new UserCredentialDto(TEST_USER_EMAIL_2, TEST_USER_USERNAME_2,
-        TEST_USER_PASSWORD_2.toCharArray());
+        TEST_USER_PASSWORD_DECRYPTED_2.toCharArray());
   }
 
   public static AuthenticationRequestDto getAuthenticationRequestDto1() {
-    return new AuthenticationRequestDto(TEST_USER_EMAIL_1, TEST_USER_PASSWORD_1.toCharArray());
+    return new AuthenticationRequestDto(TEST_USER_EMAIL_1, TEST_USER_PASSWORD_DECRYPTED_1.toCharArray());
   }
 
   public static AuthenticationRequestDto getAuthenticationRequestDto2() {
-    return new AuthenticationRequestDto(TEST_USER_EMAIL_2, TEST_USER_PASSWORD_2.toCharArray());
+    return new AuthenticationRequestDto(TEST_USER_EMAIL_2, TEST_USER_PASSWORD_DECRYPTED_2.toCharArray());
   }
 
   public static AuthenticationResponseDto getAuthenticationResponseDto1() {

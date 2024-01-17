@@ -11,7 +11,7 @@ import static com.stempz.fanime.test.utils.PasswordResetTokenTestUtil.TEST_PRT_T
 import static com.stempz.fanime.test.utils.UserCredentialTestUtil.TEST_USER_EMAIL_1;
 import static com.stempz.fanime.test.utils.UserCredentialTestUtil.TEST_USER_ID_1;
 import static com.stempz.fanime.test.utils.UserCredentialTestUtil.TEST_USER_JWT_1;
-import static com.stempz.fanime.test.utils.UserCredentialTestUtil.TEST_USER_PASSWORD_1;
+import static com.stempz.fanime.test.utils.UserCredentialTestUtil.TEST_USER_PASSWORD_DECRYPTED_1;
 import static com.stempz.fanime.test.utils.UserCredentialTestUtil.TEST_USER_ROLE_1;
 import static com.stempz.fanime.test.utils.UserCredentialTestUtil.TEST_USER_USERNAME_1;
 import static com.stempz.fanime.test.utils.UserCredentialTestUtil.getAuthenticationRequestDto1;
@@ -55,7 +55,6 @@ import com.stempz.fanime.model.UserCredential;
 import com.stempz.fanime.repository.UserCredentialRepo;
 import com.stempz.fanime.service.UserCredentialService;
 import com.stempz.fanime.test.utils.PasswordResetTokenTestUtil;
-import com.stempz.fanime.test.utils.UserCredentialTestUtil;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -230,7 +229,7 @@ public class SecurityControllerTest {
   void register_InvalidEmail_Failure() throws Exception {
     // Given
     UserCredentialDto userCredentialDto = new UserCredentialDto("testgmail.com",
-        TEST_USER_USERNAME_1, TEST_USER_PASSWORD_1.toCharArray());
+        TEST_USER_USERNAME_1, TEST_USER_PASSWORD_DECRYPTED_1.toCharArray());
 
     // When
     ResultActions result = mockMvc.perform(post("/api/v1/auth/register")
