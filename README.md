@@ -4,7 +4,7 @@
 - [Description](#Description)
 - [Architecture](#Architecture)
 - [Technologies](#Technologies)
-- [How to run](#How_to_run)
+- [How to run](#How-to-run)
 
 # Description
 ## Implemented features
