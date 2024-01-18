@@ -13,6 +13,9 @@ spring:
   kafka:
     bootstrap-servers: "${KAFKA_URL:localhost:9092}"
 eureka:
+  instance:
+    preferIpAddress: true
+    ip-address: "${DISCOVERY_HOST:localhost}"
   client:
     service-url:
       defaultZone: "${DISCOVERY_URL:http://localhost:8761/eureka}"

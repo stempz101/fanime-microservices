@@ -64,17 +64,13 @@ services:
 
   discovery-service:
     container_name: discovery-service
-    build:
-      context: discovery-service
-      dockerfile: Dockerfile
+    image: stempz/fanime-discovery-service:0.0.1
     ports:
       - '8761:8761'
 
   api-gateway-service:
     container_name: api-gateway-service
-    build:
-      context: api-gateway-service
-      dockerfile: Dockerfile
+    image: stempz/fanime-api-gateway-service:0.0.1
     ports:
       - '8765:8765'
     environment:
@@ -84,9 +80,7 @@ services:
 
   auth-service:
     container_name: auth-service
-    build:
-      context: auth-service
-      dockerfile: Dockerfile
+    image: stempz/fanime-auth-service:0.0.1
     ports:
       - '8080:8080'
     environment:
@@ -103,9 +97,7 @@ services:
 
   anime-service:
     container_name: anime-service
-    build:
-      context: anime-service
-      dockerfile: Dockerfile
+    image: stempz/fanime-anime-service:0.0.1
     ports:
       - '8081:8081'
     environment:
@@ -121,9 +113,7 @@ services:
 
   mail-service:
     container_name: mail-service
-    build:
-      context: mail-service
-      dockerfile: Dockerfile
+    image: stempz/fanime-mail-service:0.0.1
     ports:
       - '8888:8888'
     environment:
