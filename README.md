@@ -61,11 +61,7 @@ Application is based on microservice architecture:
 - Docker
 
 # How to run
-1. Build the project (`FANIME_EMAIL_PASSWORD` is specified inside the `docker-compose.yml`):
-   ```bash
-   ./mvnw clean install -DFANIME_EMAIL_PASSWORD=<password>
-   ```
-2. Using Docker, just run the next command:
+Using Docker, just run the next command:
    ```bash
    docker compose run -d
    ```
