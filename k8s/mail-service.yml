@@ -1,0 +1,68 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mail-service-secret
+type: Opaque
+data:
+  mail_password: bnF4aHZob3Fjb2t4cnl4dQ==
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mail-service-app
+  labels:
+    app: mail-service-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mail-service-app
+  template:
+    metadata:
+      labels:
+        app: mail-service-app
+    spec:
+      containers:
+        - name: mail-service-app
+          image: stempz/fanime-mail-service:0.0.1
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8888
+          env:
+            - name: KAFKA_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: kafka-cm
+                  key: kafka_svc
+            - name: FANIME_EMAIL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mail-service-secret
+                  key: mail_password
+            - name: DISCOVERY_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: eureka-cm
+                  key: eureka_service_host
+            - name: DISCOVERY_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: eureka-cm
+                  key: eureka_service_address
+            - name: EMAIL_VERIFICATION_URL
+              value: http://localhost:8765/auth/verify
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mail-service-svc
+spec:
+  selector:
+    app: mail-service-app
+  ports:
+    - port: 80
+      targetPort: 8888

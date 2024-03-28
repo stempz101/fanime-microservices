@@ -90,7 +90,7 @@ spring:
 eureka:
   instance:
     preferIpAddress: true
-    ip-address: "${DISCOVERY_HOST:localhost}"
+    hostname: "${DISCOVERY_HOST:eureka}"
   client:
     service-url:
       defaultZone: "${DISCOVERY_URL:http://localhost:8761/eureka}"
