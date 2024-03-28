@@ -1,0 +1,4 @@
+# helm install auth-service-db -f auth-service-db.yml bitnami/postgresql
+auth:
+  postgresPassword: root
+  database: fanime-creds

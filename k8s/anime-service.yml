@@ -1,0 +1,93 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: anime-service-cm
+data:
+  mongo_user: root
+  mongo_host: anime-service-db-mongodb
+  mongo_port: "27017"
+  mongo_database: fanime-anime
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: anime-service-secret
+type: Opaque
+data:
+  mongo_password: ZXhhbXBsZQ==
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: anime-service-app
+  labels:
+    app: anime-service-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: anime-service-app
+  template:
+    metadata:
+      labels:
+        app: anime-service-app
+    spec:
+      containers:
+        - name: anime-service-app
+          image: stempz/fanime-anime-service:0.0.1
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8081
+          env:
+            - name: MONGODB_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: anime-service-cm
+                  key: mongo_user
+            - name: MONGODB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: anime-service-secret
+                  key: mongo_password
+            - name: MONGODB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: anime-service-cm
+                  key: mongo_host
+            - name: MONGODB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: anime-service-cm
+                  key: mongo_port
+            - name: MONGODB_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: anime-service-cm
+                  key: mongo_database
+            - name: DISCOVERY_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: eureka-cm
+                  key: eureka_service_host
+            - name: DISCOVERY_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: eureka-cm
+                  key: eureka_service_address
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: anime-service-svc
+spec:
+  selector:
+    app: anime-service-app
+  ports:
+    - port: 80
+      targetPort: 8081

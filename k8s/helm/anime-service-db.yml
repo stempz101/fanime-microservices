@@ -1,0 +1,3 @@
+# helm install anime-service-db -f anime-service-db.yml bitnami/mongodb
+auth:
+  rootPassword: example
