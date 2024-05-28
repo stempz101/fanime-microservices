@@ -63,5 +63,5 @@ Application is based on microservice architecture:
 # How to run
 Using Docker, just run the next command:
    ```bash
-   docker compose run -d
+   docker compose up -d
    ```
